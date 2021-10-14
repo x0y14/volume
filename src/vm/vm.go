@@ -391,7 +391,7 @@ func (vm *VM) _cp(src Token, dst Token) error {
 	}
 
 	if dst.lit == "reg_a" {
-		vm.regA = &dst
+		vm.regA = &src
 	}
 
 	return nil
