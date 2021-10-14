@@ -142,7 +142,7 @@ func (vm *VM) executeOpcode(opcode Opcode, args []Token) (exit bool, err error) 
 		vm.movePc(1 + OperandHowManyHas(opcode))
 
 	case _ADD:
-		err = vm._add(args[0], args[1])
+		err = vm._add(&args[0], &args[1])
 		vm.movePc(1 + OperandHowManyHas(opcode))
 	case _SUB:
 		vm._sub(args[0], args[1])
@@ -216,8 +216,8 @@ func (vm *VM) pickUpPointer(lit string) (int, error) {
 	return 0, UndefinedPointerErr(lit)
 }
 
-func (vm *VM) isSameTokenType(t1 Token, t2 Token) bool {
-	return t1.typ == t2.typ
+func (vm *VM) isSameTokenType(t1 TokenType, t2 TokenType) bool {
+	return t1 == t2
 }
 
 func (vm *VM) addrToPointer(addrLiteral string) (PointerType, int) {
@@ -272,39 +272,87 @@ func (vm *VM) _set(src Token, dst Token) {
 	// cpでよくね?
 }
 
-func (vm *VM) _add(src Token, dst Token) error {
-	// target: [registers, addr] as (int or float)
-	// diff: [registers, addr, int, float]
+func (vm *VM) _add(src *Token, dst *Token) error {
+	// src: [registers, addr, int, float]
+	// dst: [registers, addr] as (int or float)
+
+	// is keyword or addr?
 	if dst.typ != _KEYWORD && dst.typ != _ADDR {
-		return UnexpectedTokenTypeErr([]TokenType{_KEYWORD, _ADDR}, dst.typ)
+		return UnexpectedTokenTypeErr("dst.typ", []TokenType{_KEYWORD, _ADDR}, dst.typ)
 	}
 
-	// target
-	var targetToken *Token
+	// src
+	var srcToken *Token
+	switch src.typ {
+	case _ADDR:
+		tok, err := vm.addrToToken(src.lit)
+		if err != nil {
+			return err
+		}
+		srcToken = tok
+	case _KEYWORD:
+		tok, err := vm.keywordToToken(src.lit)
+		if err != nil {
+			return err
+		}
+		srcToken = tok
+	case _INT, _FLOAT:
+		srcToken = src
+	default:
+		return UnexpectedTokenTypeErr("src.typ", []TokenType{_ADDR, _KEYWORD, _INT, _FLOAT}, srcToken.typ)
+	}
+
+	// dst
+	var dstToken *Token
 	if dst.typ == _ADDR {
 		tok, err := vm.addrToToken(dst.lit)
 		if err != nil {
 			return err
 		}
-		targetToken = tok
+		dstToken = tok
 	} else {
 		tok, err := vm.keywordToToken(dst.lit)
 		if err != nil {
 			return err
 		}
-		targetToken = tok
+		dstToken = tok
 	}
 
-	if targetToken.typ == _INT {
-		val, err := targetToken.LoadAsInt()
-		if err != nil {
-			return nil
-		}
-		diffVal, err := src.LoadAsInt()
+	// is float or int?
+	if dstToken.typ != _INT && dstToken.typ != _FLOAT {
+		return UnexpectedTokenTypeErr("dstToken.typ", []TokenType{_INT, _FLOAT}, dstToken.typ)
+	}
+
+	// is same type?
+	if !vm.isSameTokenType(srcToken.typ, dstToken.typ) {
+		return DoseNotMatchTokenTypeErr(srcToken.typ, dstToken.typ)
+	}
+
+	switch dstToken.typ {
+	case _INT:
+		target, err := strconv.Atoi(dstToken.lit)
 		if err != nil {
 			return err
 		}
-		targetToken.lit = strconv.Itoa(val + diffVal)
+
+		diff, err := strconv.Atoi(srcToken.lit)
+		if err != nil {
+			return err
+		}
+
+		dstToken.lit = strconv.Itoa(target + diff)
+	case _FLOAT:
+		target, err := strconv.ParseFloat(dstToken.lit, 64)
+		if err != nil {
+			return err
+		}
+
+		diff, err := strconv.ParseFloat(srcToken.lit, 64)
+		if err != nil {
+			return err
+		}
+
+		dstToken.lit = strconv.FormatFloat(target+diff, 'f', -1, 64)
 	}
 
 	return nil
@@ -321,7 +369,7 @@ func (vm *VM) _cmp(data1 Token, data2 Token) {
 func (vm *VM) _jz(to Token) error {
 	// to: [int] as pc
 	if to.typ != _INT {
-		return UnexpectedTokenTypeErr([]TokenType{_INT}, to.typ)
+		return UnexpectedTokenTypeErr("to.typ", []TokenType{_INT}, to.typ)
 	}
 
 	if vm.zf == 0 {
@@ -336,7 +384,7 @@ func (vm *VM) _jz(to Token) error {
 func (vm *VM) _jnz(to Token) error {
 	// to: [int] as pc
 	if to.typ != _INT {
-		return UnexpectedTokenTypeErr([]TokenType{_INT}, to.typ)
+		return UnexpectedTokenTypeErr("to.typ", []TokenType{_INT}, to.typ)
 	}
 
 	if vm.zf != 0 {
@@ -382,7 +430,7 @@ func (vm *VM) _cp(src Token, dst Token) error {
 	// dst addr to raw data
 	// to addr to pos
 
-	if src.typ != _INT {
+	if src.typ != _INT && src.typ != _FLOAT {
 		return fmt.Errorf("not support src type : %v", src.typ.String())
 	}
 
@@ -409,7 +457,7 @@ func (vm *VM) _pop(popTo Token) {
 func (vm *VM) _addSp(n Token) error {
 	// n: [int]
 	if n.typ != _INT {
-		return UnexpectedTokenTypeErr([]TokenType{_INT}, n.typ)
+		return UnexpectedTokenTypeErr("n.typ", []TokenType{_INT}, n.typ)
 	}
 	diff, err := n.LoadAsInt()
 	if err != nil {
@@ -426,7 +474,7 @@ func (vm *VM) _addSp(n Token) error {
 func (vm *VM) _subSp(n Token) error {
 	// n: [int]
 	if n.typ != _INT {
-		return UnexpectedTokenTypeErr([]TokenType{_INT}, n.typ)
+		return UnexpectedTokenTypeErr("n.typ", []TokenType{_INT}, n.typ)
 	}
 	diff, err := n.LoadAsInt()
 	if err != nil {
