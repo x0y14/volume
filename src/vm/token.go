@@ -5,6 +5,15 @@ import (
 	"strconv"
 )
 
+func IsAllowedTokenType(types []TokenType, typ TokenType) bool {
+	for _, tokType := range types {
+		if tokType == typ {
+			return true
+		}
+	}
+	return false
+}
+
 func NewToken(typ TokenType, op Opcode, lit string) *Token {
 	return &Token{
 		typ:  typ,

@@ -22,12 +22,12 @@ func UnexpectedKeyWordErr(expected []KeyWordType, actual KeyWordType) error {
 	return fmt.Errorf("expcted keyword type: %vbut actual keyword type: %v", expectedStr, actual.String())
 }
 
-func UnexpectedKPointerTypeErr(expected []PointerType, actual PointerType) error {
+func UnexpectedKPointerTypeErr(sectionName string, expected []PointerType, actual PointerType) error {
 	expectedStr := ""
 	for _, ex := range expected {
 		expectedStr += ex.String() + ", "
 	}
-	return fmt.Errorf("expcted pointer type: %vbut actual pointer type: %v", expectedStr, actual.String())
+	return fmt.Errorf("(%v) expcted pointer type: %vbut actual pointer type: %v", sectionName, expectedStr, actual.String())
 }
 
 func DoseNotMatchTokenTypeErr(tok1 TokenType, tok2 TokenType) error {

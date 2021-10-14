@@ -10,6 +10,8 @@ const (
 	_ Opcode = iota
 	_ILLEGALOpcode
 
+	_NOP
+
 	_SET // ?
 
 	_ADD
@@ -39,6 +41,8 @@ const (
 
 func (opc Opcode) String() string {
 	switch opc {
+	case _NOP:
+		return "nop"
 	case _SET:
 		return "set"
 	case _ADD:
@@ -80,6 +84,9 @@ func (opc Opcode) String() string {
 
 func ConvertOpcode(code string) Opcode {
 	switch strings.ToLower(code) {
+	case "nop":
+		return _NOP
+
 	case "set":
 		return _SET
 
@@ -130,6 +137,9 @@ func OperandHowManyHas(typ Opcode) int {
 	//typ := ConvertOpcode(code)
 
 	switch typ {
+	case _NOP:
+		return 0
+
 	case _SET:
 		return 2
 

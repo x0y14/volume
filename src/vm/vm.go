@@ -46,7 +46,6 @@ func (vm *VM) loadAsm(path string) {
 		panic(err)
 	}
 	vm.mainMemory = *tokens
-	vm.bp = len(vm.mainMemory) - 1
 }
 
 func (vm *VM) reserveStack(n int) {
@@ -56,12 +55,17 @@ func (vm *VM) reserveStack(n int) {
 		stack = append(stack, nil)
 	}
 	vm.stack = stack
+}
+
+func (vm *VM) setPointer() {
 	vm.sp = len(vm.stack) - 1
+	vm.bp = len(vm.stack) - 1
 }
 
 func (vm *VM) SetUp(stackSize int, programPath string) {
 	vm.reserveStack(stackSize)
 	vm.loadAsm(programPath)
+	vm.setPointer()
 }
 
 func (vm *VM) writeStream(text string) {
@@ -103,6 +107,22 @@ func (vm *VM) subSp(diff int) error {
 	return nil
 }
 
+func (vm *VM) IsValidPointerLocation(pointerType PointerType, pointer int) bool {
+	switch pointerType {
+	case _BasePointer, _StackPointer:
+		return 0 <= pointer && pointer <= len(vm.stack)-1
+	default:
+		return false
+	}
+}
+
+//func (vm *VM) pickTokenUsingPointer(pointerType PointerType, pointer int) (Token, error) {
+//	switch pointerType {
+//	case _BasePointer:
+//
+//	}
+//}
+
 func (vm *VM) Execute() {
 	lineNo := 1
 
@@ -137,6 +157,10 @@ func (vm *VM) executeOpcode(opcode Opcode, args []Token) (exit bool, err error) 
 	exit = false
 
 	switch opcode {
+	case _NOP:
+		vm._nop()
+		vm.movePc(1 + OperandHowManyHas(opcode))
+
 	case _SET:
 		vm._set(args[0], args[1])
 		vm.movePc(1 + OperandHowManyHas(opcode))
@@ -162,7 +186,7 @@ func (vm *VM) executeOpcode(opcode Opcode, args []Token) (exit bool, err error) 
 		err = vm._ret()
 
 	case _CP:
-		vm._cp(args[0], args[1])
+		err = vm._cp(args[0], args[1])
 		vm.movePc(1 + OperandHowManyHas(opcode))
 
 	case _PUSH:
@@ -206,51 +230,62 @@ func (vm *VM) pickUpRegister(lit string) (*Token, error) {
 	return nil, UnDefinedRegisterErr(lit)
 }
 
-func (vm *VM) pickUpPointer(lit string) (int, error) {
+func (vm *VM) pickUpPointer(lit string) (PointerType, int, error) {
 	switch lit {
 	case "bp":
-		return vm.bp, nil
+		return _BasePointer, vm.bp, nil
 	case "sp":
-		return vm.sp, nil
+		return _StackPointer, vm.sp, nil
 	}
-	return 0, UndefinedPointerErr(lit)
+	return _IllegalPointer, 0, UndefinedPointerErr(lit)
 }
 
 func (vm *VM) isSameTokenType(t1 TokenType, t2 TokenType) bool {
 	return t1 == t2
 }
 
-func (vm *VM) addrToPointer(addrLiteral string) (PointerType, int) {
-	reg := regexp.MustCompile(`^\[(bp|sp)([+\-])([0-9]*)\]$`)
-	matches := reg.FindAllString(addrLiteral, -1)
+func (vm *VM) addrToPointer(addrLiteral string) (PointerType, int, error) {
+	reg := regexp.MustCompile(`\[(bp|sp)([+\-])([0-9]+)\]`)
+	matches := reg.FindStringSubmatch(addrLiteral)
 
-	diffStr := matches[2]
+	//fmt.Printf("`%v`\n", matches)
+
+	diffStr := matches[3]
 	diff, _ := strconv.Atoi(diffStr)
 
-	if matches[1] == "-" {
+	if matches[2] == "-" {
 		diff = diff * -1
 	}
 
-	switch matches[0] {
+	switch matches[1] {
 	case "bp":
-		return _BasePointer, vm.bp + diff
+		p := vm.bp + diff
+		if vm.IsValidPointerLocation(_BasePointer, p) {
+			return _BasePointer, p, nil
+		} else {
+			return _BasePointer, -1, StackAccessErr(len(vm.stack), p)
+		}
 	case "sp":
-		return _StackPointer, vm.sp + diff
+		p := vm.sp + diff
+		if vm.IsValidPointerLocation(_StackPointer, p) {
+			return _StackPointer, vm.sp + diff, nil
+		} else {
+			return _StackPointer, -1, StackAccessErr(len(vm.stack), p)
+		}
 	}
-	return _IllegalPointer, -1
+	return _IllegalPointer, -1, UnexpectedKPointerTypeErr("addrToPointer", []PointerType{_BasePointer, _StackPointer}, _IllegalPointer)
 }
 
 func (vm *VM) addrToToken(addrLiteral string) (*Token, error) {
-	pointerType, pos := vm.addrToPointer(addrLiteral)
+	pointerType, pos, err := vm.addrToPointer(addrLiteral)
+	if err != nil {
+		return nil, err
+	}
 	if pointerType == _IllegalPointer {
-		return nil, UnexpectedKPointerTypeErr([]PointerType{_BasePointer, _StackPointer}, pointerType)
+		return nil, UnexpectedKPointerTypeErr("addrToToken", []PointerType{_BasePointer, _StackPointer}, pointerType)
 	}
 
-	if pointerType == _BasePointer {
-		return &vm.mainMemory[pos], nil
-	} else {
-		return vm.stack[pos], nil
-	}
+	return vm.stack[pos], nil
 }
 
 //func (vm *VM) keywordToToken(keyword string) (*Token, error) {
@@ -267,6 +302,10 @@ func (vm *VM) addrToToken(addrLiteral string) (*Token, error) {
 //		return nil, UndefinedKeyWordErr(keyword)
 //	}
 //}
+
+func (vm *VM) _nop() {
+	// nop :-)
+}
 
 func (vm *VM) _set(src Token, dst Token) {
 	// cpでよくね?
@@ -424,23 +463,56 @@ func (vm *VM) _ret() error {
 }
 
 func (vm *VM) _cp(src Token, dst Token) error {
-	// src: [registers, pointers, string, float, int, addr]
-	// to: [registers, addr]
+	// type check
+	srcAllowed := []TokenType{_REGISTER, _ADDR, _STRING, _FLOAT, _INT}
+	dstAllowed := []TokenType{_REGISTER, _ADDR}
+	if !IsAllowedTokenType(srcAllowed, src.typ) {
+		return UnexpectedTokenTypeErr("cp.src", srcAllowed, src.typ)
+	}
+	if !IsAllowedTokenType(dstAllowed, dst.typ) {
+		return UnexpectedTokenTypeErr("cp.dst", dstAllowed, dst.typ)
+	}
 
-	// dst addr to raw data
-	// to addr to pos
+	// コピー元
+	var srcTok *Token
+	switch src.typ {
+	case _REGISTER:
+		t, err := vm.pickUpRegister(src.lit)
+		if err != nil {
+			return err
+		}
+		srcTok = t
+	case _ADDR:
+		t, err := vm.addrToToken(src.lit)
+		if err != nil {
+			return err
+		}
+		srcTok = t
+	case _STRING, _FLOAT, _INT:
+		srcTok = &src
+	}
 
-	//if src.typ != _INT && src.typ != _FLOAT {
-	//	return fmt.Errorf("not support src type : %v", src.typ.String())
-	//}
-	//
-	//if dst.lit != "reg_a" {
-	//	return fmt.Errorf("not support dst")
-	//}
-	//
-	//if dst.lit == "reg_a" {
-	//	vm.regA = &src
-	//}
+	// コピー先
+	switch dst.typ {
+	case _REGISTER:
+		switch dst.lit {
+		case "reg_a":
+			vm.regA = srcTok
+		case "reg_b":
+			vm.regB = srcTok
+		case "reg_c":
+			vm.regC = srcTok
+		}
+	case _ADDR:
+		pointerType, pointer, err := vm.addrToPointer(dst.lit)
+		if err != nil {
+			return err
+		}
+		switch pointerType {
+		case _BasePointer, _StackPointer:
+			vm.stack[pointer] = srcTok
+		}
+	}
 
 	return nil
 }
