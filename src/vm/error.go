@@ -6,12 +6,12 @@ func LoadInvalidTypeErr(actualType TokenType, orderedType TokenType) error {
 	return fmt.Errorf("this token type is %v, but i ordered to load as %v", actualType.String(), orderedType.String())
 }
 
-func UnexpectedTokenTypeErr(expected []TokenType, actual TokenType) error {
+func UnexpectedTokenTypeErr(sectionName string, expected []TokenType, actual TokenType) error {
 	expectedStr := ""
 	for _, ex := range expected {
 		expectedStr += ex.String() + ", "
 	}
-	return fmt.Errorf("expcted token type: %vbut actual token type: %v", expectedStr, actual.String())
+	return fmt.Errorf("(%v) expcted token type: %vbut actual token type: %v", sectionName, expectedStr, actual.String())
 }
 
 func UnexpectedKeyWordErr(expected []KeyWordType, actual KeyWordType) error {
@@ -28,6 +28,10 @@ func UnexpectedKPointerTypeErr(expected []PointerType, actual PointerType) error
 		expectedStr += ex.String() + ", "
 	}
 	return fmt.Errorf("expcted pointer type: %vbut actual pointer type: %v", expectedStr, actual.String())
+}
+
+func DoseNotMatchTokenTypeErr(tok1 TokenType, tok2 TokenType) error {
+	return fmt.Errorf("two token's type dosen't match: %v, %v", tok1.String(), tok2.String())
 }
 
 func StackAccessErr(max int, pointer int) error {
