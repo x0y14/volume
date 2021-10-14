@@ -79,12 +79,31 @@ func (tk *Tokenizer) consumeKeyword() *Token {
 	ePos := tk.pos
 
 	if isReservedKeyWord(literal) {
-		return &Token{
-			typ:  _KEYWORD,
-			op:   _ILLEGALOpcode,
-			lit:  literal,
-			sPos: sPos,
-			ePos: ePos,
+		switch CheckKeyWordType(literal) {
+		case _POINTERKeyWord:
+			return &Token{
+				typ:  _POINTER,
+				op:   _ILLEGALOpcode,
+				lit:  literal,
+				sPos: sPos,
+				ePos: ePos,
+			}
+		case _REGISTERKeyWord:
+			return &Token{
+				typ:  _REGISTER,
+				op:   _ILLEGALOpcode,
+				lit:  literal,
+				sPos: sPos,
+				ePos: ePos,
+			}
+		default:
+			return &Token{
+				typ:  _ILLEGALToken,
+				op:   _ILLEGALOpcode,
+				lit:  literal,
+				sPos: sPos,
+				ePos: ePos,
+			}
 		}
 	} else {
 		return &Token{

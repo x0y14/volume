@@ -253,20 +253,20 @@ func (vm *VM) addrToToken(addrLiteral string) (*Token, error) {
 	}
 }
 
-func (vm *VM) keywordToToken(keyword string) (*Token, error) {
-	switch CheckKeyWordType(keyword) {
-	case _REGISTER:
-		tok, err := vm.pickUpRegister(keyword)
-		if err != nil {
-			return nil, err
-		}
-		return tok, nil
-	case _POINTER:
-		return nil, UnexpectedKeyWordErr([]KeyWordType{_REGISTER}, _POINTER)
-	default:
-		return nil, UndefinedKeyWordErr(keyword)
-	}
-}
+//func (vm *VM) keywordToToken(keyword string) (*Token, error) {
+//	switch CheckKeyWordType(keyword) {
+//	case _REGISTER:
+//		tok, err := vm.pickUpRegister(keyword)
+//		if err != nil {
+//			return nil, err
+//		}
+//		return tok, nil
+//	case _POINTER:
+//		return nil, UnexpectedKeyWordErr([]KeyWordType{_REGISTER}, _POINTER)
+//	default:
+//		return nil, UndefinedKeyWordErr(keyword)
+//	}
+//}
 
 func (vm *VM) _set(src Token, dst Token) {
 	// cpでよくね?
@@ -276,84 +276,84 @@ func (vm *VM) _add(src *Token, dst *Token) error {
 	// src: [registers, addr, int, float]
 	// dst: [registers, addr] as (int or float)
 
-	// is keyword or addr?
-	if dst.typ != _KEYWORD && dst.typ != _ADDR {
-		return UnexpectedTokenTypeErr("dst.typ", []TokenType{_KEYWORD, _ADDR}, dst.typ)
-	}
-
-	// src
-	var srcToken *Token
-	switch src.typ {
-	case _ADDR:
-		tok, err := vm.addrToToken(src.lit)
-		if err != nil {
-			return err
-		}
-		srcToken = tok
-	case _KEYWORD:
-		tok, err := vm.keywordToToken(src.lit)
-		if err != nil {
-			return err
-		}
-		srcToken = tok
-	case _INT, _FLOAT:
-		srcToken = src
-	default:
-		return UnexpectedTokenTypeErr("src.typ", []TokenType{_ADDR, _KEYWORD, _INT, _FLOAT}, srcToken.typ)
-	}
-
-	// dst
-	var dstToken *Token
-	if dst.typ == _ADDR {
-		tok, err := vm.addrToToken(dst.lit)
-		if err != nil {
-			return err
-		}
-		dstToken = tok
-	} else {
-		tok, err := vm.keywordToToken(dst.lit)
-		if err != nil {
-			return err
-		}
-		dstToken = tok
-	}
-
-	// is float or int?
-	if dstToken.typ != _INT && dstToken.typ != _FLOAT {
-		return UnexpectedTokenTypeErr("dstToken.typ", []TokenType{_INT, _FLOAT}, dstToken.typ)
-	}
-
-	// is same type?
-	if !vm.isSameTokenType(srcToken.typ, dstToken.typ) {
-		return DoseNotMatchTokenTypeErr(srcToken.typ, dstToken.typ)
-	}
-
-	switch dstToken.typ {
-	case _INT:
-		target, err := strconv.Atoi(dstToken.lit)
-		if err != nil {
-			return err
-		}
-
-		diff, err := strconv.Atoi(srcToken.lit)
-		if err != nil {
-			return err
-		}
-
-		dstToken.lit = strconv.Itoa(target + diff)
-	case _FLOAT:
-		target, err := strconv.ParseFloat(dstToken.lit, 64)
-		if err != nil {
-			return err
-		}
-
-		diff, err := strconv.ParseFloat(srcToken.lit, 64)
-		if err != nil {
-			return err
-		}
-
-		dstToken.lit = strconv.FormatFloat(target+diff, 'f', -1, 64)
-	}
+	//// is keyword or addr?
+	//if dst.typ != _KEYWORD && dst.typ != _ADDR {
+	//	return UnexpectedTokenTypeErr("dst.typ", []TokenType{_KEYWORD, _ADDR}, dst.typ)
+	//}
+	//
+	//// src
+	//var srcToken *Token
+	//switch src.typ {
+	//case _ADDR:
+	//	tok, err := vm.addrToToken(src.lit)
+	//	if err != nil {
+	//		return err
+	//	}
+	//	srcToken = tok
+	//case _KEYWORD:
+	//	tok, err := vm.keywordToToken(src.lit)
+	//	if err != nil {
+	//		return err
+	//	}
+	//	srcToken = tok
+	//case _INT, _FLOAT:
+	//	srcToken = src
+	//default:
+	//	return UnexpectedTokenTypeErr("src.typ", []TokenType{_ADDR, _KEYWORD, _INT, _FLOAT}, srcToken.typ)
+	//}
+	//
+	//// dst
+	//var dstToken *Token
+	//if dst.typ == _ADDR {
+	//	tok, err := vm.addrToToken(dst.lit)
+	//	if err != nil {
+	//		return err
+	//	}
+	//	dstToken = tok
+	//} else {
+	//	tok, err := vm.keywordToToken(dst.lit)
+	//	if err != nil {
+	//		return err
+	//	}
+	//	dstToken = tok
+	//}
+	//
+	//// is float or int?
+	//if dstToken.typ != _INT && dstToken.typ != _FLOAT {
+	//	return UnexpectedTokenTypeErr("dstToken.typ", []TokenType{_INT, _FLOAT}, dstToken.typ)
+	//}
+	//
+	//// is same type?
+	//if !vm.isSameTokenType(srcToken.typ, dstToken.typ) {
+	//	return DoseNotMatchTokenTypeErr(srcToken.typ, dstToken.typ)
+	//}
+	//
+	//switch dstToken.typ {
+	//case _INT:
+	//	target, err := strconv.Atoi(dstToken.lit)
+	//	if err != nil {
+	//		return err
+	//	}
+	//
+	//	diff, err := strconv.Atoi(srcToken.lit)
+	//	if err != nil {
+	//		return err
+	//	}
+	//
+	//	dstToken.lit = strconv.Itoa(target + diff)
+	//case _FLOAT:
+	//	target, err := strconv.ParseFloat(dstToken.lit, 64)
+	//	if err != nil {
+	//		return err
+	//	}
+	//
+	//	diff, err := strconv.ParseFloat(srcToken.lit, 64)
+	//	if err != nil {
+	//		return err
+	//	}
+	//
+	//	dstToken.lit = strconv.FormatFloat(target+diff, 'f', -1, 64)
+	//}
 
 	return nil
 }
@@ -368,57 +368,57 @@ func (vm *VM) _cmp(data1 Token, data2 Token) {
 
 func (vm *VM) _jz(to Token) error {
 	// to: [int] as pc
-	if to.typ != _INT {
-		return UnexpectedTokenTypeErr("to.typ", []TokenType{_INT}, to.typ)
-	}
-
-	if vm.zf == 0 {
-		newPc, err := to.LoadAsInt()
-		if err != nil {
-			return err
-		}
-		vm.pc = newPc
-	}
+	//if to.typ != _INT {
+	//	return UnexpectedTokenTypeErr("to.typ", []TokenType{_INT}, to.typ)
+	//}
+	//
+	//if vm.zf == 0 {
+	//	newPc, err := to.LoadAsInt()
+	//	if err != nil {
+	//		return err
+	//	}
+	//	vm.pc = newPc
+	//}
 	return nil
 }
 func (vm *VM) _jnz(to Token) error {
 	// to: [int] as pc
-	if to.typ != _INT {
-		return UnexpectedTokenTypeErr("to.typ", []TokenType{_INT}, to.typ)
-	}
-
-	if vm.zf != 0 {
-		newPc, err := to.LoadAsInt()
-		if err != nil {
-			return err
-		}
-		vm.pc = newPc
-	}
+	//if to.typ != _INT {
+	//	return UnexpectedTokenTypeErr("to.typ", []TokenType{_INT}, to.typ)
+	//}
+	//
+	//if vm.zf != 0 {
+	//	newPc, err := to.LoadAsInt()
+	//	if err != nil {
+	//		return err
+	//	}
+	//	vm.pc = newPc
+	//}
 
 	return nil
 }
 
 func (vm *VM) _call(op Token) error {
 	// op: [int] as pc
-	vm.sp--
-	vm.stack[vm.sp] = NewToken(_INT, _ILLEGALOpcode, strconv.Itoa(vm.pc+2))
-	addrWeAreGoing := op
-	newPc, err := addrWeAreGoing.LoadAsInt()
-	if err != nil {
-		return err
-	}
-	vm.pc = newPc
+	//vm.sp--
+	//vm.stack[vm.sp] = NewToken(_INT, _ILLEGALOpcode, strconv.Itoa(vm.pc+2))
+	//addrWeAreGoing := op
+	//newPc, err := addrWeAreGoing.LoadAsInt()
+	//if err != nil {
+	//	return err
+	//}
+	//vm.pc = newPc
 
 	return nil
 }
 func (vm *VM) _ret() error {
-	returnAddr := vm.stack[vm.pc+1]
-	vm.sp++
-	newPc, err := returnAddr.LoadAsInt()
-	if err != nil {
-		return err
-	}
-	vm.pc = newPc
+	//returnAddr := vm.stack[vm.pc+1]
+	//vm.sp++
+	//newPc, err := returnAddr.LoadAsInt()
+	//if err != nil {
+	//	return err
+	//}
+	//vm.pc = newPc
 
 	return nil
 }
@@ -430,17 +430,17 @@ func (vm *VM) _cp(src Token, dst Token) error {
 	// dst addr to raw data
 	// to addr to pos
 
-	if src.typ != _INT && src.typ != _FLOAT {
-		return fmt.Errorf("not support src type : %v", src.typ.String())
-	}
-
-	if dst.lit != "reg_a" {
-		return fmt.Errorf("not support dst")
-	}
-
-	if dst.lit == "reg_a" {
-		vm.regA = &src
-	}
+	//if src.typ != _INT && src.typ != _FLOAT {
+	//	return fmt.Errorf("not support src type : %v", src.typ.String())
+	//}
+	//
+	//if dst.lit != "reg_a" {
+	//	return fmt.Errorf("not support dst")
+	//}
+	//
+	//if dst.lit == "reg_a" {
+	//	vm.regA = &src
+	//}
 
 	return nil
 }
@@ -456,34 +456,34 @@ func (vm *VM) _pop(popTo Token) {
 
 func (vm *VM) _addSp(n Token) error {
 	// n: [int]
-	if n.typ != _INT {
-		return UnexpectedTokenTypeErr("n.typ", []TokenType{_INT}, n.typ)
-	}
-	diff, err := n.LoadAsInt()
-	if err != nil {
-		return err
-	}
-	err = vm.addSp(diff)
-	if err != nil {
-		return err
-	}
+	//if n.typ != _INT {
+	//	return UnexpectedTokenTypeErr("n.typ", []TokenType{_INT}, n.typ)
+	//}
+	//diff, err := n.LoadAsInt()
+	//if err != nil {
+	//	return err
+	//}
+	//err = vm.addSp(diff)
+	//if err != nil {
+	//	return err
+	//}
 
 	return nil
 }
 
 func (vm *VM) _subSp(n Token) error {
 	// n: [int]
-	if n.typ != _INT {
-		return UnexpectedTokenTypeErr("n.typ", []TokenType{_INT}, n.typ)
-	}
-	diff, err := n.LoadAsInt()
-	if err != nil {
-		return err
-	}
-	err = vm.subSp(diff)
-	if err != nil {
-		return err
-	}
+	//if n.typ != _INT {
+	//	return UnexpectedTokenTypeErr("n.typ", []TokenType{_INT}, n.typ)
+	//}
+	//diff, err := n.LoadAsInt()
+	//if err != nil {
+	//	return err
+	//}
+	//err = vm.subSp(diff)
+	//if err != nil {
+	//	return err
+	//}
 
 	return nil
 }
