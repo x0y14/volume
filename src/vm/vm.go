@@ -309,9 +309,9 @@ func (vm *VM) _add(src Token, dst Token) error {
 
 	return nil
 }
-func (vm *VM) _sub(target Token, diff Token) {
-	// target: [registers, pointers] as (int or float)
-	// diff: [int, float]
+func (vm *VM) _sub(src Token, dst Token) {
+	// src: [registers, pointers] as (int or float)
+	// dst: [int, float]
 }
 func (vm *VM) _cmp(data1 Token, data2 Token) {
 	// data1: [any]
