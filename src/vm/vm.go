@@ -176,6 +176,8 @@ func (vm *VM) executeOpcode(opcode Opcode, args []Token) (exit bool, err error) 
 		err = vm._cmp(args[0], args[1])
 		vm.movePc(1 + OperandHowManyHas(opcode))
 
+	case _JUMP:
+		err = vm._jump(args[0])
 	case _JZ:
 		err = vm._jz(args[0])
 	case _JNZ:
@@ -464,34 +466,47 @@ func (vm *VM) _cmp(data1 Token, data2 Token) error {
 	return nil
 }
 
+func (vm *VM) _jump(to Token) error {
+	newPc, err := to.LoadAsInt()
+	if err != nil {
+		return err
+	}
+	vm.pc = newPc
+	return nil
+}
 func (vm *VM) _jz(to Token) error {
 	// to: [int] as pc
-	//if to.typ != _INT {
-	//	return UnexpectedTokenTypeErr("to.typ", []TokenType{_INT}, to.typ)
-	//}
-	//
-	//if vm.zf == 0 {
-	//	newPc, err := to.LoadAsInt()
-	//	if err != nil {
-	//		return err
-	//	}
-	//	vm.pc = newPc
-	//}
+	if to.typ != _INT {
+		return UnexpectedTokenTypeErr("jz", []TokenType{_INT}, to.typ)
+	}
+
+	if vm.zf == 0 {
+		newPc, err := to.LoadAsInt()
+		if err != nil {
+			return err
+		}
+		vm.pc = newPc
+	} else {
+		vm.movePc(1 + OperandHowManyHas(_JZ))
+	}
+
 	return nil
 }
 func (vm *VM) _jnz(to Token) error {
 	// to: [int] as pc
-	//if to.typ != _INT {
-	//	return UnexpectedTokenTypeErr("to.typ", []TokenType{_INT}, to.typ)
-	//}
-	//
-	//if vm.zf != 0 {
-	//	newPc, err := to.LoadAsInt()
-	//	if err != nil {
-	//		return err
-	//	}
-	//	vm.pc = newPc
-	//}
+	if to.typ != _INT {
+		return UnexpectedTokenTypeErr("jnz", []TokenType{_INT}, to.typ)
+	}
+
+	if vm.zf != 0 {
+		newPc, err := to.LoadAsInt()
+		if err != nil {
+			return err
+		}
+		vm.pc = newPc
+	} else {
+		vm.movePc(1 + OperandHowManyHas(_JNZ))
+	}
 
 	return nil
 }

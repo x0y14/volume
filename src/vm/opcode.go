@@ -20,6 +20,7 @@ const (
 
 	_SJOIN
 
+	_JUMP
 	_JZ
 	_JNZ
 
@@ -53,6 +54,8 @@ func (opc Opcode) String() string {
 		return "cmp"
 	case _SJOIN:
 		return "sjoin"
+	case _JUMP:
+		return "jump"
 	case _JZ:
 		return "jz"
 	case _JNZ:
@@ -100,6 +103,8 @@ func ConvertOpcode(code string) Opcode {
 	case "sjoin":
 		return _SJOIN
 
+	case "jump":
+		return _JUMP
 	case "jz":
 		return _JZ
 	case "jnz":
@@ -153,6 +158,8 @@ func OperandHowManyHas(typ Opcode) int {
 	case _SJOIN:
 		return 2
 
+	case _JUMP:
+		return 1
 	case _JZ:
 		return 1
 	case _JNZ:

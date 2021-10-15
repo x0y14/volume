@@ -43,3 +43,9 @@ func TestVM_CMP(t *testing.T) {
 	vm.SetUp(10, "../../sample/asm/test_cmp.vol.s")
 	vm.Execute()
 }
+
+func TestVM_JUMP(t *testing.T) {
+	vm := NewVM()
+	vm.SetUp(10, "../../sample/asm/test_jump_jz_jnz.vol.s")
+	vm.Execute()
+}
