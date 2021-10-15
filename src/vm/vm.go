@@ -94,7 +94,7 @@ func (vm *VM) operands(n int) []Token {
 
 func (vm *VM) addSp(diff int) error {
 	if (vm.sp+diff) < 0 || len(vm.stack)-1 < (vm.sp+diff) {
-		return StackAccessErr(len(vm.stack), vm.sp+diff)
+		return StackAccessErr("addSp", len(vm.stack)-1, vm.sp+diff)
 	}
 	vm.sp += diff
 	return nil
@@ -191,10 +191,10 @@ func (vm *VM) executeOpcode(opcode Opcode, args []Token) (exit bool, err error) 
 		vm.movePc(1 + OperandHowManyHas(opcode))
 
 	case _PUSH:
-		vm._push(args[0])
+		err = vm._push(args[0])
 		vm.movePc(1 + OperandHowManyHas(opcode))
 	case _POP:
-		vm._pop(args[0])
+		err = vm._pop(args[0])
 		vm.movePc(1 + OperandHowManyHas(opcode))
 
 	case _ADDsp:
@@ -264,14 +264,14 @@ func (vm *VM) addrToPointer(addrLiteral string) (PointerType, int, error) {
 		if vm.IsValidPointerLocation(_BasePointer, p) {
 			return _BasePointer, p, nil
 		} else {
-			return _BasePointer, -1, StackAccessErr(len(vm.stack), p)
+			return _BasePointer, -1, StackAccessErr("bp", len(vm.stack), p)
 		}
 	case "sp":
 		p := vm.sp + diff
 		if vm.IsValidPointerLocation(_StackPointer, p) {
 			return _StackPointer, vm.sp + diff, nil
 		} else {
-			return _StackPointer, -1, StackAccessErr(len(vm.stack), p)
+			return _StackPointer, -1, StackAccessErr("sp", len(vm.stack), p)
 		}
 	}
 	return _IllegalPointer, -1, UnexpectedKPointerTypeErr("addrToPointer", []PointerType{_BasePointer, _StackPointer}, _IllegalPointer)
@@ -518,13 +518,76 @@ func (vm *VM) _cp(src Token, dst Token) error {
 	return nil
 }
 
-func (vm *VM) _push(data Token) {
-	// data: [registers, pointers, string, float, int, addr]
+func (vm *VM) _push(data Token) error {
+	// data: [registers, addr, string, int, float]
 	// addr to raw data
+
+	var dataTok *Token
+	switch data.typ {
+	case _REGISTER:
+		switch data.lit {
+		case "reg_a":
+			dataTok = vm.regA
+		case "reg_b":
+			dataTok = vm.regB
+		case "reg_c":
+			dataTok = vm.regC
+		}
+	case _ADDR:
+		tok, err := vm.addrToToken(data.lit)
+		if err != nil {
+			return err
+		}
+		dataTok = tok
+	case _STRING, _INT, _FLOAT:
+		dataTok = &data
+	default:
+		return UnexpectedTokenTypeErr("push", []TokenType{_REGISTER, _ADDR, _STRING, _INT, _FLOAT}, data.typ)
+	}
+
+	if err := vm.subSp(1); err != nil {
+		return err
+	}
+
+	vm.stack[vm.sp] = dataTok
+
+	return nil
 }
-func (vm *VM) _pop(popTo Token) {
-	// popTo: [registers, pointers, addr]
+func (vm *VM) _pop(popTo Token) error {
+	// popTo: [registers, addr]
 	// addr to pos
+	data := vm.stack[vm.sp]
+
+	switch popTo.typ {
+	case _REGISTER:
+		switch popTo.lit {
+		case "reg_a":
+			vm.regA = data
+		case "reg_b":
+			vm.regB = data
+		case "reg_c":
+			vm.regC = data
+		}
+	case _ADDR:
+		pointerType, pointer, err := vm.addrToPointer(popTo.lit)
+		if err != nil {
+			return err
+		}
+
+		switch pointerType {
+		case _BasePointer, _StackPointer:
+			vm.stack[pointer] = data
+		default:
+			return UnexpectedKPointerTypeErr("pop", []PointerType{_BasePointer, _StackPointer}, pointerType)
+		}
+
+	}
+
+	if err := vm.addSp(1); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (vm *VM) _addSp(n Token) error {
