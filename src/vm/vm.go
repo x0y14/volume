@@ -173,7 +173,7 @@ func (vm *VM) executeOpcode(opcode Opcode, args []Token) (exit bool, err error) 
 		vm._sub(args[0], args[1])
 		vm.movePc(1 + OperandHowManyHas(opcode))
 	case _CMP:
-		vm._cmp(args[0], args[1])
+		err = vm._cmp(args[0], args[1])
 		vm.movePc(1 + OperandHowManyHas(opcode))
 
 	case _JZ:
