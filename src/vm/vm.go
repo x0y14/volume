@@ -166,7 +166,7 @@ func (vm *VM) executeOpcode(opcode Opcode, args []Token) (exit bool, err error) 
 		vm.movePc(1 + OperandHowManyHas(opcode))
 
 	case _SET:
-		vm._set(args[0], args[1])
+		//vm._set(args[0], args[1])
 		vm.movePc(1 + OperandHowManyHas(opcode))
 
 	case _ADD:
@@ -251,7 +251,7 @@ func (vm *VM) isSameTokenType(t1 TokenType, t2 TokenType) bool {
 }
 
 func (vm *VM) addrToPointer(addrLiteral string) (PointerType, int, error) {
-	reg := regexp.MustCompile(`\[(bp|sp)([+\-])([0-9]+)\]`)
+	reg := regexp.MustCompile(`\[(bp|sp)([+\-])([0-9]+)]`)
 	matches := reg.FindStringSubmatch(addrLiteral)
 
 	//fmt.Printf("`%v`\n", matches)
@@ -310,9 +310,9 @@ func (vm *VM) _nop() {
 	// nop :-)
 }
 
-func (vm *VM) _set(src Token, dst Token) {
-	// cpでよくね?
-}
+//func (vm *VM) _set(src Token, dst Token) {
+//	// cpでよくね?
+//}
 
 func (vm *VM) _add(src *Token, dst *Token) error {
 	// src: [registers, addr, int, float]
