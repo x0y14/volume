@@ -545,8 +545,8 @@ func (vm *VM) _ret() error {
 
 func (vm *VM) _cp(src Token, dst Token) error {
 	// type check
-	srcAllowed := []TokenType{_REGISTER, _ADDR, _STRING, _FLOAT, _INT}
-	dstAllowed := []TokenType{_REGISTER, _ADDR}
+	srcAllowed := []TokenType{_REGISTER, _ADDR, _POINTER, _STRING, _FLOAT, _INT}
+	dstAllowed := []TokenType{_REGISTER, _ADDR, _POINTER}
 	if !IsAllowedTokenType(srcAllowed, src.typ) {
 		return UnexpectedTokenTypeErr("cp.src", srcAllowed, src.typ)
 	}
@@ -571,6 +571,13 @@ func (vm *VM) _cp(src Token, dst Token) error {
 		srcTok = t
 	case _STRING, _FLOAT, _INT:
 		srcTok = &src
+	case _POINTER:
+		switch src.lit {
+		case "bp":
+			srcTok = NewToken(_INT, _ILLEGALOpcode, strconv.Itoa(vm.bp))
+		case "sp":
+			srcTok = NewToken(_INT, _ILLEGALOpcode, strconv.Itoa(vm.sp))
+		}
 	}
 
 	// コピー先
@@ -593,13 +600,32 @@ func (vm *VM) _cp(src Token, dst Token) error {
 		case _BasePointer, _StackPointer:
 			vm.stack[pointer] = srcTok
 		}
+	case _POINTER:
+		if srcTok.typ != _INT {
+			return UnexpectedTokenTypeErr("cp[to pointer]", []TokenType{_INT}, srcTok.typ)
+		}
+
+		switch dst.lit {
+		case "bp":
+			newBp, err := srcTok.LoadAsInt()
+			if err != nil {
+				return err
+			}
+			vm.bp = newBp
+		case "sp":
+			newSp, err := srcTok.LoadAsInt()
+			if err != nil {
+				return err
+			}
+			vm.sp = newSp
+		}
 	}
 
 	return nil
 }
 
 func (vm *VM) _push(data Token) error {
-	// data: [registers, addr, string, int, float]
+	// data: [registers, pointer, addr, string, int, float]
 	// addr to raw data
 
 	var dataTok *Token
@@ -621,6 +647,13 @@ func (vm *VM) _push(data Token) error {
 		dataTok = tok
 	case _STRING, _INT, _FLOAT:
 		dataTok = &data
+	case _POINTER:
+		switch data.lit {
+		case "bp":
+			dataTok = NewToken(_INT, _ILLEGALOpcode, strconv.Itoa(vm.bp))
+		case "sp":
+			dataTok = NewToken(_INT, _ILLEGALOpcode, strconv.Itoa(vm.sp))
+		}
 	default:
 		return UnexpectedTokenTypeErr("push", []TokenType{_REGISTER, _ADDR, _STRING, _INT, _FLOAT}, data.typ)
 	}
@@ -660,7 +693,21 @@ func (vm *VM) _pop(popTo Token) error {
 		default:
 			return UnexpectedKPointerTypeErr("pop", []PointerType{_BasePointer, _StackPointer}, pointerType)
 		}
-
+	case _POINTER:
+		switch popTo.lit {
+		case "bp":
+			newBp, err := data.LoadAsInt()
+			if err != nil {
+				return err
+			}
+			vm.bp = newBp
+		case "sp":
+			newSp, err := data.LoadAsInt()
+			if err != nil {
+				return err
+			}
+			vm.sp = newSp
+		}
 	}
 
 	if err := vm.addSp(1); err != nil {
