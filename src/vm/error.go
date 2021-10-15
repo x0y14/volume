@@ -34,8 +34,8 @@ func DoseNotMatchTokenTypeErr(tok1 TokenType, tok2 TokenType) error {
 	return fmt.Errorf("two token's type dosen't match: %v, %v", tok1.String(), tok2.String())
 }
 
-func StackAccessErr(max int, pointer int) error {
-	return fmt.Errorf("stack invalid access: %v, you can access: %v-%v", pointer, 0, max)
+func StackAccessErr(sectionName string, max int, pointer int) error {
+	return fmt.Errorf("(%v) stack invalid access: %v, you can access: %v <= X <= %v", sectionName, pointer, 0, max)
 }
 
 func UndefinedKeyWordErr(text string) error {
