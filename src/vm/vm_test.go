@@ -25,3 +25,9 @@ func TestVM_SP(t *testing.T) {
 	vm.SetUp(10, "../../sample/asm/test_sp.vol.s")
 	vm.Execute()
 }
+
+func TestVM_ECHO(t *testing.T) {
+	vm := NewVM()
+	vm.SetUp(10, "../../sample/asm/test_echo.vol.s")
+	vm.Execute()
+}

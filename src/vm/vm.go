@@ -624,8 +624,31 @@ func (vm *VM) _subSp(n Token) error {
 	return nil
 }
 
-func (vm *VM) _echo(data Token) {
-	// data: [registers, pointers?, addr, string, int, float]
+func (vm *VM) _echo(data Token) error {
+	// data: [registers, pointer, addr, string, int, float]
+	var dataTok Token
+	switch data.typ {
+	case _REGISTER:
+		switch data.lit {
+		case "reg_a":
+			dataTok = *vm.regA
+		case "reg_b":
+			dataTok = *vm.regB
+		case "reg_c":
+			dataTok = *vm.regC
+		}
+	case _POINTER, _STRING, _INT, _FLOAT:
+		dataTok = data
+	case _ADDR:
+		tok, err := vm.addrToToken(data.lit)
+		if err != nil {
+			return err
+		}
+		dataTok = *tok
+	}
+
+	vm.writeStream(dataTok.lit)
+	return nil
 }
 
 // いる？これ？
