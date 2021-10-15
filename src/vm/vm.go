@@ -100,8 +100,9 @@ func (vm *VM) addSp(diff int) error {
 	return nil
 }
 func (vm *VM) subSp(diff int) error {
-	if (vm.sp+diff) < 0 || len(vm.stack)-1 < (vm.sp+diff) {
-		return StackAccessErr(len(vm.stack), vm.sp+diff)
+	// [0, 1, 2, 3] : len() => 4
+	if (vm.sp-diff) < 0 || len(vm.stack)-1 < (vm.sp-diff) {
+		return StackAccessErr("subSp", len(vm.stack)-1, vm.sp-diff)
 	}
 	vm.sp -= diff
 	return nil
