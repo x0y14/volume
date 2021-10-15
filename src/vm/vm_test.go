@@ -19,3 +19,9 @@ func TestVM_PUSH_POP(t *testing.T) {
 	vm.SetUp(10, "../../sample/asm/test_push_pop.vol.s")
 	vm.Execute()
 }
+
+func TestVM_SP(t *testing.T) {
+	vm := NewVM()
+	vm.SetUp(10, "../../sample/asm/test_sp.vol.s")
+	vm.Execute()
+}

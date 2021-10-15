@@ -592,34 +592,34 @@ func (vm *VM) _pop(popTo Token) error {
 
 func (vm *VM) _addSp(n Token) error {
 	// n: [int]
-	//if n.typ != _INT {
-	//	return UnexpectedTokenTypeErr("n.typ", []TokenType{_INT}, n.typ)
-	//}
-	//diff, err := n.LoadAsInt()
-	//if err != nil {
-	//	return err
-	//}
-	//err = vm.addSp(diff)
-	//if err != nil {
-	//	return err
-	//}
+	if n.typ != _INT {
+		return UnexpectedTokenTypeErr("_addSp", []TokenType{_INT}, n.typ)
+	}
+	diff, err := n.LoadAsInt()
+	if err != nil {
+		return err
+	}
+	err = vm.addSp(diff)
+	if err != nil {
+		return err
+	}
 
 	return nil
 }
 
 func (vm *VM) _subSp(n Token) error {
 	// n: [int]
-	//if n.typ != _INT {
-	//	return UnexpectedTokenTypeErr("n.typ", []TokenType{_INT}, n.typ)
-	//}
-	//diff, err := n.LoadAsInt()
-	//if err != nil {
-	//	return err
-	//}
-	//err = vm.subSp(diff)
-	//if err != nil {
-	//	return err
-	//}
+	if n.typ != _INT {
+		return UnexpectedTokenTypeErr("n.typ", []TokenType{_INT}, n.typ)
+	}
+	diff, err := n.LoadAsInt()
+	if err != nil {
+		return err
+	}
+	err = vm.subSp(diff)
+	if err != nil {
+		return err
+	}
 
 	return nil
 }
