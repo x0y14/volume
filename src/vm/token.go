@@ -57,7 +57,7 @@ func (tk *Token) LoadAsFloat() (float64, error) {
 }
 
 func (tk *Token) LoadAsInt() (int, error) {
-	if tk.typ != _INT {
+	if tk.typ != _INT && tk.typ != _RTNAddr {
 		return 0, LoadInvalidTypeErr(tk.typ, _INT)
 	}
 	in, err := strconv.Atoi(tk.lit)

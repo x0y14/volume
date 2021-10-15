@@ -440,25 +440,32 @@ func (vm *VM) _jnz(to Token) error {
 
 func (vm *VM) _call(op Token) error {
 	// op: [int] as pc
-	//vm.sp--
-	//vm.stack[vm.sp] = NewToken(_INT, _ILLEGALOpcode, strconv.Itoa(vm.pc+2))
-	//addrWeAreGoing := op
-	//newPc, err := addrWeAreGoing.LoadAsInt()
-	//if err != nil {
-	//	return err
-	//}
-	//vm.pc = newPc
+	if err := vm.subSp(1); err != nil {
+		return err
+	}
+	vm.stack[vm.sp] = NewToken(_RTNAddr, _ILLEGALOpcode, strconv.Itoa(vm.pc+2))
+	addrWeAreGoing := op
+	newPc, err := addrWeAreGoing.LoadAsInt()
+	if err != nil {
+		return err
+	}
+	vm.pc = newPc
 
 	return nil
 }
 func (vm *VM) _ret() error {
-	//returnAddr := vm.stack[vm.pc+1]
-	//vm.sp++
-	//newPc, err := returnAddr.LoadAsInt()
-	//if err != nil {
-	//	return err
-	//}
-	//vm.pc = newPc
+	rtnAddr := vm.stack[vm.sp]
+	if err := vm.addSp(1); err != nil {
+		return err
+	}
+	if rtnAddr.typ != _RTNAddr {
+		return UnexpectedTokenTypeErr("ret", []TokenType{_RTNAddr}, rtnAddr.typ)
+	}
+	newPc, err := rtnAddr.LoadAsInt()
+	if err != nil {
+		return err
+	}
+	vm.pc = newPc
 
 	return nil
 }

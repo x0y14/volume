@@ -11,6 +11,7 @@ const (
 	_INT       // 123, ...
 	_FLOAT
 	_ADDR // [bp+1], [sp+1], [sp-1], ...
+	_RTNAddr
 	_REGISTER
 	_POINTER
 	_COMMENT
@@ -28,6 +29,8 @@ func (tkTyp TokenType) String() string {
 		return "FLOAT"
 	case _ADDR:
 		return "ADDR"
+	case _RTNAddr:
+		return "RTNAddr"
 	case _REGISTER:
 		return "REGISTER"
 	case _POINTER:

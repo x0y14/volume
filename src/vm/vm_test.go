@@ -31,3 +31,9 @@ func TestVM_ECHO(t *testing.T) {
 	vm.SetUp(10, "../../sample/asm/test_echo.vol.s")
 	vm.Execute()
 }
+
+func TestVM_CALL_RET(t *testing.T) {
+	vm := NewVM()
+	vm.SetUp(10, "../../sample/asm/test_call_ret.vol.s")
+	vm.Execute()
+}
