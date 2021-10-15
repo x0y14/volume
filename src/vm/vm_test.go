@@ -49,3 +49,9 @@ func TestVM_JUMP(t *testing.T) {
 	vm.SetUp(10, "../../sample/asm/test_jump_jz_jnz.vol.s")
 	vm.Execute()
 }
+
+func TestVM_SAY_HELLO(t *testing.T) {
+	vm := NewVM()
+	vm.SetUp(20, "../../sample/asm/say_hello.vol.s")
+	vm.Execute()
+}
