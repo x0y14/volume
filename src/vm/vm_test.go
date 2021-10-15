@@ -67,3 +67,9 @@ func TestVM_SUB(t *testing.T) {
 	vm.SetUp(20, "../../sample/asm/test_sub.vol.s")
 	vm.Execute()
 }
+
+func TestVM_COMMENT(t *testing.T) {
+	vm := NewVM()
+	vm.SetUp(20, "../../sample/asm/test_comment.vol.s")
+	vm.Execute()
+}

@@ -150,6 +150,9 @@ func (vm *VM) Execute() {
 			if exit {
 				break
 			}
+		} else {
+			// read comment?
+			vm.movePc(1)
 		}
 	}
 }
