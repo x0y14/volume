@@ -205,7 +205,7 @@ func (vm *VM) executeOpcode(opcode Opcode, args []Token) (exit bool, err error) 
 		vm.movePc(1 + OperandHowManyHas(opcode))
 
 	case _ECHO:
-		vm._echo(args[0])
+		err = vm._echo(args[0])
 		vm.movePc(1 + OperandHowManyHas(opcode))
 
 	case _EXIT:
@@ -401,9 +401,67 @@ func (vm *VM) _sub(src Token, dst Token) {
 	// src: [registers, pointers] as (int or float)
 	// dst: [int, float]
 }
-func (vm *VM) _cmp(data1 Token, data2 Token) {
-	// data1: [any]
-	// data2: [any]
+func (vm *VM) _cmp(data1 Token, data2 Token) error {
+	// data1: [registers, addr, string, int, float]
+	// data2: [registers, addr, string, int, float]
+
+	// 型と、litしか見ない。
+
+	var tok1 Token
+	var tok2 Token
+
+	switch data1.typ {
+	case _REGISTER:
+		switch data1.lit {
+		case "reg_a":
+			tok1 = *vm.regA
+		case "reg_b":
+			tok1 = *vm.regB
+		case "reg_c":
+			tok1 = *vm.regC
+		}
+	case _ADDR:
+		t, err := vm.addrToToken(data1.lit)
+		if err != nil {
+			return err
+		}
+		tok1 = *t
+	case _STRING, _INT, _FLOAT:
+		tok1 = data1
+	}
+
+	switch data2.typ {
+	case _REGISTER:
+		switch data2.lit {
+		case "reg_a":
+			tok2 = *vm.regA
+		case "reg_b":
+			tok2 = *vm.regB
+		case "reg_c":
+			tok2 = *vm.regC
+		}
+	case _ADDR:
+		t, err := vm.addrToToken(data2.lit)
+		if err != nil {
+			return err
+		}
+		tok2 = *t
+	case _STRING, _INT, _FLOAT:
+		tok2 = data2
+	}
+
+	// 型おなじ?
+	if !vm.isSameTokenType(tok1.typ, tok2.typ) {
+		vm.zf = 0
+	}
+
+	if tok1.lit == tok2.lit {
+		vm.zf = 1
+	} else {
+		vm.zf = 0
+	}
+
+	return nil
 }
 
 func (vm *VM) _jz(to Token) error {

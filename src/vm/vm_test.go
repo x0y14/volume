@@ -37,3 +37,9 @@ func TestVM_CALL_RET(t *testing.T) {
 	vm.SetUp(10, "../../sample/asm/test_call_ret.vol.s")
 	vm.Execute()
 }
+
+func TestVM_CMP(t *testing.T) {
+	vm := NewVM()
+	vm.SetUp(10, "../../sample/asm/test_cmp.vol.s")
+	vm.Execute()
+}
