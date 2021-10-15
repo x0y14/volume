@@ -170,7 +170,7 @@ func (vm *VM) executeOpcode(opcode Opcode, args []Token) (exit bool, err error) 
 		err = vm._add(&args[0], &args[1])
 		vm.movePc(1 + OperandHowManyHas(opcode))
 	case _SUB:
-		vm._sub(args[0], args[1])
+		err = vm._sub(&args[0], &args[1])
 		vm.movePc(1 + OperandHowManyHas(opcode))
 	case _CMP:
 		err = vm._cmp(args[0], args[1])
@@ -291,20 +291,17 @@ func (vm *VM) addrToToken(addrLiteral string) (*Token, error) {
 	return vm.stack[pos], nil
 }
 
-//func (vm *VM) keywordToToken(keyword string) (*Token, error) {
-//	switch CheckKeyWordType(keyword) {
-//	case _REGISTER:
-//		tok, err := vm.pickUpRegister(keyword)
-//		if err != nil {
-//			return nil, err
-//		}
-//		return tok, nil
-//	case _POINTER:
-//		return nil, UnexpectedKeyWordErr([]KeyWordType{_REGISTER}, _POINTER)
-//	default:
-//		return nil, UndefinedKeyWordErr(keyword)
-//	}
-//}
+func (vm *VM) registerToToken(lit string) (*Token, error) {
+	switch lit {
+	case "reg_a":
+		return vm.regA, nil
+	case "reg_b":
+		return vm.regB, nil
+	case "reg_c":
+		return vm.regC, nil
+	}
+	return nil, UnDefinedRegisterErr(lit)
+}
 
 func (vm *VM) _nop() {
 	// nop :-)
@@ -317,91 +314,276 @@ func (vm *VM) _set(src Token, dst Token) {
 func (vm *VM) _add(src *Token, dst *Token) error {
 	// src: [registers, addr, int, float]
 	// dst: [registers, addr] as (int or float)
+	var srcTok *Token
+	switch src.typ {
+	case _REGISTER:
+		tok, err := vm.registerToToken(src.lit)
+		if err != nil {
+			return err
+		}
+		srcTok = tok
+	case _ADDR:
+		tok, err := vm.addrToToken(src.lit)
+		if err != nil {
+			return err
+		}
+		srcTok = tok
+	case _INT, _FLOAT:
+		srcTok = src
+	}
 
-	//// is keyword or addr?
-	//if dst.typ != _KEYWORD && dst.typ != _ADDR {
-	//	return UnexpectedTokenTypeErr("dst.typ", []TokenType{_KEYWORD, _ADDR}, dst.typ)
-	//}
-	//
-	//// src
-	//var srcToken *Token
-	//switch src.typ {
-	//case _ADDR:
-	//	tok, err := vm.addrToToken(src.lit)
-	//	if err != nil {
-	//		return err
-	//	}
-	//	srcToken = tok
-	//case _KEYWORD:
-	//	tok, err := vm.keywordToToken(src.lit)
-	//	if err != nil {
-	//		return err
-	//	}
-	//	srcToken = tok
-	//case _INT, _FLOAT:
-	//	srcToken = src
-	//default:
-	//	return UnexpectedTokenTypeErr("src.typ", []TokenType{_ADDR, _KEYWORD, _INT, _FLOAT}, srcToken.typ)
-	//}
-	//
-	//// dst
-	//var dstToken *Token
-	//if dst.typ == _ADDR {
-	//	tok, err := vm.addrToToken(dst.lit)
-	//	if err != nil {
-	//		return err
-	//	}
-	//	dstToken = tok
-	//} else {
-	//	tok, err := vm.keywordToToken(dst.lit)
-	//	if err != nil {
-	//		return err
-	//	}
-	//	dstToken = tok
-	//}
-	//
-	//// is float or int?
-	//if dstToken.typ != _INT && dstToken.typ != _FLOAT {
-	//	return UnexpectedTokenTypeErr("dstToken.typ", []TokenType{_INT, _FLOAT}, dstToken.typ)
-	//}
-	//
-	//// is same type?
-	//if !vm.isSameTokenType(srcToken.typ, dstToken.typ) {
-	//	return DoseNotMatchTokenTypeErr(srcToken.typ, dstToken.typ)
-	//}
-	//
-	//switch dstToken.typ {
-	//case _INT:
-	//	target, err := strconv.Atoi(dstToken.lit)
-	//	if err != nil {
-	//		return err
-	//	}
-	//
-	//	diff, err := strconv.Atoi(srcToken.lit)
-	//	if err != nil {
-	//		return err
-	//	}
-	//
-	//	dstToken.lit = strconv.Itoa(target + diff)
-	//case _FLOAT:
-	//	target, err := strconv.ParseFloat(dstToken.lit, 64)
-	//	if err != nil {
-	//		return err
-	//	}
-	//
-	//	diff, err := strconv.ParseFloat(srcToken.lit, 64)
-	//	if err != nil {
-	//		return err
-	//	}
-	//
-	//	dstToken.lit = strconv.FormatFloat(target+diff, 'f', -1, 64)
-	//}
+	switch dst.typ {
+	case _REGISTER:
+		switch dst.lit {
+		case "reg_a":
+			if !vm.isSameTokenType(src.typ, vm.regA.typ) {
+				return DoseNotMatchTokenTypeErr(src.typ, vm.regA.typ)
+			}
+			switch srcTok.typ {
+			case _INT:
+				diff, err := srcTok.LoadAsInt()
+				if err != nil {
+					return err
+				}
+				target, err := vm.regA.LoadAsInt()
+				if err != nil {
+					return err
+				}
+				vm.regA = NewToken(_INT, _ILLEGALOpcode, strconv.Itoa(target+diff))
+			case _FLOAT:
+				diff, err := srcTok.LoadAsFloat()
+				if err != nil {
+					return err
+				}
+				target, err := vm.regA.LoadAsFloat()
+				if err != nil {
+					return err
+				}
+				vm.regA = NewToken(_FLOAT, _ILLEGALOpcode, strconv.FormatFloat(target+diff, 'f', -1, 64))
+			}
+		case "reg_b":
+			if !vm.isSameTokenType(src.typ, vm.regB.typ) {
+				return DoseNotMatchTokenTypeErr(src.typ, vm.regB.typ)
+			}
+			switch srcTok.typ {
+			case _INT:
+				diff, err := srcTok.LoadAsInt()
+				if err != nil {
+					return err
+				}
+				target, err := vm.regB.LoadAsInt()
+				if err != nil {
+					return err
+				}
+				vm.regB = NewToken(_INT, _ILLEGALOpcode, strconv.Itoa(target+diff))
+			case _FLOAT:
+				diff, err := srcTok.LoadAsFloat()
+				if err != nil {
+					return err
+				}
+				target, err := vm.regB.LoadAsFloat()
+				if err != nil {
+					return err
+				}
+				vm.regB = NewToken(_FLOAT, _ILLEGALOpcode, strconv.FormatFloat(target+diff, 'f', -1, 64))
+			}
+		case "reg_c":
+			if !vm.isSameTokenType(src.typ, vm.regC.typ) {
+				return DoseNotMatchTokenTypeErr(src.typ, vm.regC.typ)
+			}
+			switch srcTok.typ {
+			case _INT:
+				diff, err := srcTok.LoadAsInt()
+				if err != nil {
+					return err
+				}
+				target, err := vm.regC.LoadAsInt()
+				if err != nil {
+					return err
+				}
+				vm.regC = NewToken(_INT, _ILLEGALOpcode, strconv.Itoa(target+diff))
+			case _FLOAT:
+				diff, err := srcTok.LoadAsFloat()
+				if err != nil {
+					return err
+				}
+				target, err := vm.regC.LoadAsFloat()
+				if err != nil {
+					return err
+				}
+				vm.regC = NewToken(_FLOAT, _ILLEGALOpcode, strconv.FormatFloat(target+diff, 'f', -1, 64))
+			}
+		}
+	case _ADDR:
+		_, pointer, err := vm.addrToPointer(dst.lit)
+		if err != nil {
+			return err
+		}
+		if !vm.isSameTokenType(srcTok.typ, vm.stack[pointer].typ) {
+			return DoseNotMatchTokenTypeErr(srcTok.typ, vm.stack[pointer].typ)
+		}
+		switch vm.stack[pointer].typ {
+		case _INT:
+			diff, err := srcTok.LoadAsInt()
+			if err != nil {
+				return err
+			}
+			target, err := vm.stack[pointer].LoadAsInt()
+			if err != nil {
+				return err
+			}
+			vm.stack[pointer] = NewToken(_INT, _ILLEGALOpcode, strconv.Itoa(target+diff))
+		case _FLOAT:
+			diff, err := srcTok.LoadAsFloat()
+			if err != nil {
+				return err
+			}
+			target, err := vm.stack[pointer].LoadAsFloat()
+			if err != nil {
+				return err
+			}
+			vm.stack[pointer] = NewToken(_FLOAT, _ILLEGALOpcode, strconv.FormatFloat(target+diff, 'f', -1, 64))
+		}
+	}
 
 	return nil
 }
-func (vm *VM) _sub(src Token, dst Token) {
+func (vm *VM) _sub(src *Token, dst *Token) error {
 	// src: [registers, pointers] as (int or float)
 	// dst: [int, float]
+	var srcTok *Token
+	switch src.typ {
+	case _REGISTER:
+		tok, err := vm.registerToToken(src.lit)
+		if err != nil {
+			return err
+		}
+		srcTok = tok
+	case _ADDR:
+		tok, err := vm.addrToToken(src.lit)
+		if err != nil {
+			return err
+		}
+		srcTok = tok
+	case _INT, _FLOAT:
+		srcTok = src
+	}
+
+	switch dst.typ {
+	case _REGISTER:
+		switch dst.lit {
+		case "reg_a":
+			if !vm.isSameTokenType(src.typ, vm.regA.typ) {
+				return DoseNotMatchTokenTypeErr(src.typ, vm.regA.typ)
+			}
+			switch srcTok.typ {
+			case _INT:
+				diff, err := srcTok.LoadAsInt()
+				if err != nil {
+					return err
+				}
+				target, err := vm.regA.LoadAsInt()
+				if err != nil {
+					return err
+				}
+				vm.regA = NewToken(_INT, _ILLEGALOpcode, strconv.Itoa(target-diff))
+			case _FLOAT:
+				diff, err := srcTok.LoadAsFloat()
+				if err != nil {
+					return err
+				}
+				target, err := vm.regA.LoadAsFloat()
+				if err != nil {
+					return err
+				}
+				vm.regA = NewToken(_FLOAT, _ILLEGALOpcode, strconv.FormatFloat(target-diff, 'f', -1, 64))
+			}
+		case "reg_b":
+			if !vm.isSameTokenType(src.typ, vm.regB.typ) {
+				return DoseNotMatchTokenTypeErr(src.typ, vm.regB.typ)
+			}
+			switch srcTok.typ {
+			case _INT:
+				diff, err := srcTok.LoadAsInt()
+				if err != nil {
+					return err
+				}
+				target, err := vm.regB.LoadAsInt()
+				if err != nil {
+					return err
+				}
+				vm.regB = NewToken(_INT, _ILLEGALOpcode, strconv.Itoa(target-diff))
+			case _FLOAT:
+				diff, err := srcTok.LoadAsFloat()
+				if err != nil {
+					return err
+				}
+				target, err := vm.regB.LoadAsFloat()
+				if err != nil {
+					return err
+				}
+				vm.regB = NewToken(_FLOAT, _ILLEGALOpcode, strconv.FormatFloat(target-diff, 'f', -1, 64))
+			}
+		case "reg_c":
+			if !vm.isSameTokenType(src.typ, vm.regC.typ) {
+				return DoseNotMatchTokenTypeErr(src.typ, vm.regC.typ)
+			}
+			switch srcTok.typ {
+			case _INT:
+				diff, err := srcTok.LoadAsInt()
+				if err != nil {
+					return err
+				}
+				target, err := vm.regC.LoadAsInt()
+				if err != nil {
+					return err
+				}
+				vm.regC = NewToken(_INT, _ILLEGALOpcode, strconv.Itoa(target-diff))
+			case _FLOAT:
+				diff, err := srcTok.LoadAsFloat()
+				if err != nil {
+					return err
+				}
+				target, err := vm.regC.LoadAsFloat()
+				if err != nil {
+					return err
+				}
+				vm.regC = NewToken(_FLOAT, _ILLEGALOpcode, strconv.FormatFloat(target-diff, 'f', -1, 64))
+			}
+		}
+	case _ADDR:
+		_, pointer, err := vm.addrToPointer(dst.lit)
+		if err != nil {
+			return err
+		}
+		if !vm.isSameTokenType(srcTok.typ, vm.stack[pointer].typ) {
+			return DoseNotMatchTokenTypeErr(srcTok.typ, vm.stack[pointer].typ)
+		}
+		switch vm.stack[pointer].typ {
+		case _INT:
+			diff, err := srcTok.LoadAsInt()
+			if err != nil {
+				return err
+			}
+			target, err := vm.stack[pointer].LoadAsInt()
+			if err != nil {
+				return err
+			}
+			vm.stack[pointer] = NewToken(_INT, _ILLEGALOpcode, strconv.Itoa(target-diff))
+		case _FLOAT:
+			diff, err := srcTok.LoadAsFloat()
+			if err != nil {
+				return err
+			}
+			target, err := vm.stack[pointer].LoadAsFloat()
+			if err != nil {
+				return err
+			}
+			vm.stack[pointer] = NewToken(_FLOAT, _ILLEGALOpcode, strconv.FormatFloat(target-diff, 'f', -1, 64))
+		}
+	}
+
+	return nil
 }
 func (vm *VM) _cmp(data1 Token, data2 Token) error {
 	// data1: [registers, addr, string, int, float]

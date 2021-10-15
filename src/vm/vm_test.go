@@ -55,3 +55,15 @@ func TestVM_SAY_HELLO(t *testing.T) {
 	vm.SetUp(20, "../../sample/asm/say_hello.vol.s")
 	vm.Execute()
 }
+
+func TestVM_ADD(t *testing.T) {
+	vm := NewVM()
+	vm.SetUp(20, "../../sample/asm/test_add.vol.s")
+	vm.Execute()
+}
+
+func TestVM_SUB(t *testing.T) {
+	vm := NewVM()
+	vm.SetUp(20, "../../sample/asm/test_sub.vol.s")
+	vm.Execute()
+}
