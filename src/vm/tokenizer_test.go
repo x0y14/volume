@@ -7,7 +7,7 @@ import (
 )
 
 func TestNewTokenizer_ExitOnly(t *testing.T) {
-	tk, err := NewTokenizerPath("../../sample/asm/exit_only.vol.s")
+	tk, err := NewTokenizerPath("../../sample/machine_lang/exit_only.vol.s.b")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -15,7 +15,7 @@ func TestNewTokenizer_ExitOnly(t *testing.T) {
 }
 
 func TestNewTokenizer_EchoExit(t *testing.T) {
-	tk, err := NewTokenizerPath("../../sample/asm/echo_exit.vol.s")
+	tk, err := NewTokenizerPath("../../sample/machine_lang/echo_exit.vol.s.b")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -23,7 +23,7 @@ func TestNewTokenizer_EchoExit(t *testing.T) {
 }
 
 func TestTokenizer_Tokenize_Single(t *testing.T) {
-	tkr, err := NewTokenizerPath("../../sample/asm/say_hello.vol.s")
+	tkr, err := NewTokenizerPath("../../sample/machine_lang/say_hello.vol.s.b.s")
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -5,6 +5,15 @@ import (
 	"strconv"
 )
 
+func IsAllowedTokenType(types []TokenType, typ TokenType) bool {
+	for _, tokType := range types {
+		if tokType == typ {
+			return true
+		}
+	}
+	return false
+}
+
 func NewToken(typ TokenType, op Opcode, lit string) *Token {
 	return &Token{
 		typ:  typ,
@@ -48,7 +57,7 @@ func (tk *Token) LoadAsFloat() (float64, error) {
 }
 
 func (tk *Token) LoadAsInt() (int, error) {
-	if tk.typ != _INT {
+	if tk.typ != _INT && tk.typ != _RTNAddr {
 		return 0, LoadInvalidTypeErr(tk.typ, _INT)
 	}
 	in, err := strconv.Atoi(tk.lit)

@@ -22,20 +22,20 @@ func UnexpectedKeyWordErr(expected []KeyWordType, actual KeyWordType) error {
 	return fmt.Errorf("expcted keyword type: %vbut actual keyword type: %v", expectedStr, actual.String())
 }
 
-func UnexpectedKPointerTypeErr(expected []PointerType, actual PointerType) error {
+func UnexpectedKPointerTypeErr(sectionName string, expected []PointerType, actual PointerType) error {
 	expectedStr := ""
 	for _, ex := range expected {
 		expectedStr += ex.String() + ", "
 	}
-	return fmt.Errorf("expcted pointer type: %vbut actual pointer type: %v", expectedStr, actual.String())
+	return fmt.Errorf("(%v) expcted pointer type: %vbut actual pointer type: %v", sectionName, expectedStr, actual.String())
 }
 
 func DoseNotMatchTokenTypeErr(tok1 TokenType, tok2 TokenType) error {
 	return fmt.Errorf("two token's type dosen't match: %v, %v", tok1.String(), tok2.String())
 }
 
-func StackAccessErr(max int, pointer int) error {
-	return fmt.Errorf("stack invalid access: %v, you can access: %v-%v", pointer, 0, max)
+func StackAccessErr(sectionName string, max int, pointer int) error {
+	return fmt.Errorf("(%v) stack invalid access: %v, you can access: %v <= X <= %v", sectionName, pointer, 0, max)
 }
 
 func UndefinedKeyWordErr(text string) error {

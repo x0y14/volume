@@ -20,3 +20,16 @@ cp src dst
 add src dst  
 sub src dst  
 
+
+#### string idea
+- len "text" dst  
+  dst = 4
+
+- split "text"  
+push "t"  
+push "e"  
+push "x"  
+push "t"  
+
+- join "text" dst  
+  dst = dst + "text"  

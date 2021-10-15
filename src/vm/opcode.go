@@ -10,6 +10,8 @@ const (
 	_ Opcode = iota
 	_ILLEGALOpcode
 
+	_NOP
+
 	_SET // ?
 
 	_ADD
@@ -18,6 +20,7 @@ const (
 
 	_SJOIN
 
+	_JUMP
 	_JZ
 	_JNZ
 
@@ -39,6 +42,8 @@ const (
 
 func (opc Opcode) String() string {
 	switch opc {
+	case _NOP:
+		return "nop"
 	case _SET:
 		return "set"
 	case _ADD:
@@ -49,6 +54,8 @@ func (opc Opcode) String() string {
 		return "cmp"
 	case _SJOIN:
 		return "sjoin"
+	case _JUMP:
+		return "jump"
 	case _JZ:
 		return "jz"
 	case _JNZ:
@@ -80,6 +87,9 @@ func (opc Opcode) String() string {
 
 func ConvertOpcode(code string) Opcode {
 	switch strings.ToLower(code) {
+	case "nop":
+		return _NOP
+
 	case "set":
 		return _SET
 
@@ -93,6 +103,8 @@ func ConvertOpcode(code string) Opcode {
 	case "sjoin":
 		return _SJOIN
 
+	case "jump":
+		return _JUMP
 	case "jz":
 		return _JZ
 	case "jnz":
@@ -130,6 +142,9 @@ func OperandHowManyHas(typ Opcode) int {
 	//typ := ConvertOpcode(code)
 
 	switch typ {
+	case _NOP:
+		return 0
+
 	case _SET:
 		return 2
 
@@ -143,6 +158,8 @@ func OperandHowManyHas(typ Opcode) int {
 	case _SJOIN:
 		return 2
 
+	case _JUMP:
+		return 1
 	case _JZ:
 		return 1
 	case _JNZ:
