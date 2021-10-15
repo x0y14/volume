@@ -339,8 +339,8 @@ func (vm *VM) _add(src *Token, dst *Token) error {
 	case _REGISTER:
 		switch dst.lit {
 		case "reg_a":
-			if !vm.isSameTokenType(src.typ, vm.regA.typ) {
-				return DoseNotMatchTokenTypeErr(src.typ, vm.regA.typ)
+			if !vm.isSameTokenType(srcTok.typ, vm.regA.typ) {
+				return DoseNotMatchTokenTypeErr(srcTok.typ, vm.regA.typ)
 			}
 			switch srcTok.typ {
 			case _INT:
@@ -365,8 +365,8 @@ func (vm *VM) _add(src *Token, dst *Token) error {
 				vm.regA = NewToken(_FLOAT, _ILLEGALOpcode, strconv.FormatFloat(target+diff, 'f', -1, 64))
 			}
 		case "reg_b":
-			if !vm.isSameTokenType(src.typ, vm.regB.typ) {
-				return DoseNotMatchTokenTypeErr(src.typ, vm.regB.typ)
+			if !vm.isSameTokenType(srcTok.typ, vm.regB.typ) {
+				return DoseNotMatchTokenTypeErr(srcTok.typ, vm.regB.typ)
 			}
 			switch srcTok.typ {
 			case _INT:
@@ -391,8 +391,8 @@ func (vm *VM) _add(src *Token, dst *Token) error {
 				vm.regB = NewToken(_FLOAT, _ILLEGALOpcode, strconv.FormatFloat(target+diff, 'f', -1, 64))
 			}
 		case "reg_c":
-			if !vm.isSameTokenType(src.typ, vm.regC.typ) {
-				return DoseNotMatchTokenTypeErr(src.typ, vm.regC.typ)
+			if !vm.isSameTokenType(srcTok.typ, vm.regC.typ) {
+				return DoseNotMatchTokenTypeErr(srcTok.typ, vm.regC.typ)
 			}
 			switch srcTok.typ {
 			case _INT:
