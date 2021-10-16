@@ -1,4 +1,4 @@
-package vm
+package vvm
 
 type KeyWordType int
 
