@@ -20,13 +20,13 @@ func NewTokenizerPath(path string) (*Tokenizer, error) {
 	}, nil
 }
 
-func NewTokenizer(text string) *Tokenizer {
-	return &Tokenizer{
-		raw:   text,
-		runes: []rune(text),
-		pos:   0,
-	}
-}
+//func NewTokenizer(text string) *Tokenizer {
+//	return &Tokenizer{
+//		raw:   text,
+//		runes: []rune(text),
+//		pos:   0,
+//	}
+//}
 
 type Tokenizer struct {
 	raw   string
