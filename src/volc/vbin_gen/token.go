@@ -58,7 +58,7 @@ type Token struct {
 }
 
 func (tok Token) String() string {
-	return fmt.Sprintf("Token( pos: %03d-%03d ) { typ: %20s, lit: %20s }", tok.sPos, tok.ePos, tok.typ.String(), tok.lit)
+	return fmt.Sprintf("Token( pos: %03d <= ... < %03d ) { typ: %20s, lit: %20q }", tok.sPos, tok.ePos, tok.typ.String(), tok.lit)
 }
 
 func NewToken(lit string, typ TokenType, sPos int, ePos int) *Token {
