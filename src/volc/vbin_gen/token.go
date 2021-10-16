@@ -8,21 +8,19 @@ const (
 	_ TokenType = iota
 	ILLEGAL
 
-	STRING
-	INT
-	FLOAT
+	STRING // "abc"
+	INT    // 123
+	FLOAT  // 123.4
 	NULL
 
-	IDENT
+	IDENT // var, main, ...
 
 	NEWLINE
 	WHITESPACE
 
-	SYMBOL
+	SYMBOL // +-., ...
 
-	ADDR
-
-	COMMENT
+	COMMENT // start with semicolon
 )
 
 func (typ TokenType) String() string {
@@ -43,8 +41,6 @@ func (typ TokenType) String() string {
 		return "WHITESPACE"
 	case SYMBOL:
 		return "SYMBOL"
-	case ADDR:
-		return "ADDR"
 	case COMMENT:
 		return "COMMENT"
 	case ILLEGAL:
@@ -63,4 +59,13 @@ type Token struct {
 
 func (tok Token) String() string {
 	return fmt.Sprintf("Token( pos: %03d-%03d ) { typ: %20s, lit: %20s }", tok.sPos, tok.ePos, tok.typ.String(), tok.lit)
+}
+
+func NewToken(lit string, typ TokenType, sPos int, ePos int) *Token {
+	return &Token{
+		lit:  lit,
+		typ:  typ,
+		sPos: sPos,
+		ePos: ePos,
+	}
 }
