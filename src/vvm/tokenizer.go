@@ -319,7 +319,7 @@ func (tk *Tokenizer) Tokenize() (*[]Token, error) {
 		} else if c == '"' || c == '\'' {
 			tok := tk.consumeString()
 			tokens = append(tokens, *tok)
-		} else if c == '#' {
+		} else if c == ';' {
 			tok := tk.consumeComment()
 			tokens = append(tokens, *tok)
 		} else if c == '[' {

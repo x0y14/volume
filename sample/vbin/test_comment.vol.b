@@ -1,3 +1,3 @@
-echo "hello"#aaaa
-# こんばんわ
+echo "hello";comment
+; こんばんわ
 exit
