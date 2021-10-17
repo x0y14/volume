@@ -140,14 +140,20 @@ func (tk *Tokenizer) consumeString() *Token {
 	for !tk.isEof() {
 		c := tk.curt()
 		if c == '"' {
-			if tk.prev() == '\\' {
-				lit += string(c)
-			} else {
-				quoCount++
-				if quoCount%2 == 0 {
-					tk.goNext()
-					break
-				}
+			//if tk.prev() == '\\' {
+			//	lit += string(c)
+			//} else {
+			//	quoCount++
+			//	if quoCount%2 == 0 {
+			//		tk.goNext()
+			//		break
+			//	}
+			//}
+			quoCount++
+			lit += string(c)
+			if quoCount%2 == 0 {
+				tk.goNext()
+				break
 			}
 		} else {
 			lit += string(c)

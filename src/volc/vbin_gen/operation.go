@@ -25,3 +25,14 @@ func (op *Operation) String() string {
 
 	return fmt.Sprintf("Operation {  %10s [ %20s ]  } %v", op.opcode.String(), args, lbl)
 }
+
+func (op *Operation) Line() string {
+	args := ""
+	for i, arg := range op.operands {
+		args += arg.String()
+		if len(op.operands)-1 != i {
+			args += " "
+		}
+	}
+	return fmt.Sprintf("%v %v", op.opcode.String(), args)
+}
