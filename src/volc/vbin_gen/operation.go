@@ -13,7 +13,7 @@ func (op *Operation) String() string {
 	args := ""
 	for i, arg := range op.operands {
 		args += arg.String()
-		if len(op.operands) != i {
+		if len(op.operands)-1 != i {
 			args += ", "
 		}
 	}
@@ -23,5 +23,5 @@ func (op *Operation) String() string {
 		lbl += " as " + op.label
 	}
 
-	return fmt.Sprintf("Operation { %10s, [ %20s ] } %v", op.opcode.String(), args, lbl)
+	return fmt.Sprintf("Operation {  %10s [ %20s ]  } %v", op.opcode.String(), args, lbl)
 }
