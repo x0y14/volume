@@ -46,10 +46,7 @@ func TestNewVBinGen(t *testing.T) {
 		vbg := NewVBinGen(*ops)
 		vbg.Scan()
 
-		vbin := vbg.Replace()
-		for i, line := range vbin {
-			fmt.Printf("[%03d] %v\n", i, line.Line())
-		}
+		fmt.Printf("%v\n", vbg.AsString())
 
 		fmt.Printf("\n\n")
 	}

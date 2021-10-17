@@ -24,7 +24,7 @@ func (vbg *VBinGen) Scan() {
 	}
 }
 
-func (vbg *VBinGen) Replace() []Operation {
+func (vbg *VBinGen) replace() []Operation {
 	var ops []Operation
 
 	for _, originalOp := range vbg.operations {
@@ -52,4 +52,27 @@ func (vbg *VBinGen) Replace() []Operation {
 	}
 
 	return ops
+}
+
+func (vbg *VBinGen) AsString() string {
+	str := ""
+	ops := vbg.replace()
+	for i, op := range ops {
+		str += op.Line()
+		if i != len(ops)-1 {
+			str += "\n"
+		}
+	}
+
+	return str
+}
+
+func (vbg *VBinGen) AsLine() []string {
+	var line []string
+	ops := vbg.replace()
+	for _, op := range ops {
+		line = append(line, op.Line())
+	}
+
+	return line
 }
