@@ -23,7 +23,7 @@ func TestNewTokenizer_EchoExit(t *testing.T) {
 }
 
 func TestTokenizer_Tokenize_Single(t *testing.T) {
-	tkr, err := NewTokenizerPath("../../sample/vbin/say_hello.vol.b.s")
+	tkr, err := NewTokenizerPath("../../sample/vbin/say_hello.vol.b")
 	if err != nil {
 		t.Fatal(err)
 	}
