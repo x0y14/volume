@@ -129,7 +129,7 @@ func (vvm *VVM) Execute() {
 
 	for !vvm.isProgEof() {
 		program := vvm.curtProg()
-		if program.op != _ILLEGALOpcode {
+		if program.op != ILLEGALOpcode {
 			howManyOperands := OperandHowManyHas(program.op)
 			operands := vvm.operands(howManyOperands)
 
@@ -161,59 +161,59 @@ func (vvm *VVM) executeOpcode(opcode Opcode, args []Token) (exit bool, err error
 	exit = false
 
 	switch opcode {
-	case _NOP:
+	case NOP:
 		vvm._nop()
 		vvm.movePc(1 + OperandHowManyHas(opcode))
 
-	case _SET:
+	case SET:
 		//vvm._set(args[0], args[1])
 		vvm.movePc(1 + OperandHowManyHas(opcode))
 
-	case _ADD:
+	case ADD:
 		err = vvm._add(&args[0], &args[1])
 		vvm.movePc(1 + OperandHowManyHas(opcode))
-	case _SUB:
+	case SUB:
 		err = vvm._sub(&args[0], &args[1])
 		vvm.movePc(1 + OperandHowManyHas(opcode))
-	case _CMP:
+	case CMP:
 		err = vvm._cmp(args[0], args[1])
 		vvm.movePc(1 + OperandHowManyHas(opcode))
 
-	case _JUMP:
+	case JUMP:
 		err = vvm._jump(args[0])
-	case _JZ:
+	case JZ:
 		err = vvm._jz(args[0])
-	case _JNZ:
+	case JNZ:
 		err = vvm._jnz(args[0])
 
-	case _CALL:
+	case CALL:
 		err = vvm._call(args[0])
-	case _RET:
+	case RET:
 		err = vvm._ret()
 
-	case _CP:
+	case CP:
 		err = vvm._cp(args[0], args[1])
 		vvm.movePc(1 + OperandHowManyHas(opcode))
 
-	case _PUSH:
+	case PUSH:
 		err = vvm._push(args[0])
 		vvm.movePc(1 + OperandHowManyHas(opcode))
-	case _POP:
+	case POP:
 		err = vvm._pop(args[0])
 		vvm.movePc(1 + OperandHowManyHas(opcode))
 
-	case _ADDsp:
+	case ADDsp:
 		err = vvm._addSp(args[0])
 		vvm.movePc(1 + OperandHowManyHas(opcode))
-	case _SUBsp:
+	case SUBsp:
 		err = vvm._subSp(args[0])
 		vvm.movePc(1 + OperandHowManyHas(opcode))
 
-	case _ECHO:
+	case ECHO:
 		err = vvm._echo(args[0])
 		vvm.movePc(1 + OperandHowManyHas(opcode))
 
-	case _EXIT:
+	case EXIT:
 		vvm._exit()
 		exit = true
 
@@ -352,7 +352,7 @@ func (vvm *VVM) _add(src *Token, dst *Token) error {
 				if err != nil {
 					return err
 				}
-				vvm.regA = NewToken(_INT, _ILLEGALOpcode, strconv.Itoa(target+diff))
+				vvm.regA = NewToken(_INT, ILLEGALOpcode, strconv.Itoa(target+diff))
 			case _FLOAT:
 				diff, err := srcTok.LoadAsFloat()
 				if err != nil {
@@ -362,7 +362,7 @@ func (vvm *VVM) _add(src *Token, dst *Token) error {
 				if err != nil {
 					return err
 				}
-				vvm.regA = NewToken(_FLOAT, _ILLEGALOpcode, strconv.FormatFloat(target+diff, 'f', -1, 64))
+				vvm.regA = NewToken(_FLOAT, ILLEGALOpcode, strconv.FormatFloat(target+diff, 'f', -1, 64))
 			}
 		case "reg_b":
 			if !vvm.isSameTokenType(srcTok.typ, vvm.regB.typ) {
@@ -378,7 +378,7 @@ func (vvm *VVM) _add(src *Token, dst *Token) error {
 				if err != nil {
 					return err
 				}
-				vvm.regB = NewToken(_INT, _ILLEGALOpcode, strconv.Itoa(target+diff))
+				vvm.regB = NewToken(_INT, ILLEGALOpcode, strconv.Itoa(target+diff))
 			case _FLOAT:
 				diff, err := srcTok.LoadAsFloat()
 				if err != nil {
@@ -388,7 +388,7 @@ func (vvm *VVM) _add(src *Token, dst *Token) error {
 				if err != nil {
 					return err
 				}
-				vvm.regB = NewToken(_FLOAT, _ILLEGALOpcode, strconv.FormatFloat(target+diff, 'f', -1, 64))
+				vvm.regB = NewToken(_FLOAT, ILLEGALOpcode, strconv.FormatFloat(target+diff, 'f', -1, 64))
 			}
 		case "reg_c":
 			if !vvm.isSameTokenType(srcTok.typ, vvm.regC.typ) {
@@ -404,7 +404,7 @@ func (vvm *VVM) _add(src *Token, dst *Token) error {
 				if err != nil {
 					return err
 				}
-				vvm.regC = NewToken(_INT, _ILLEGALOpcode, strconv.Itoa(target+diff))
+				vvm.regC = NewToken(_INT, ILLEGALOpcode, strconv.Itoa(target+diff))
 			case _FLOAT:
 				diff, err := srcTok.LoadAsFloat()
 				if err != nil {
@@ -414,7 +414,7 @@ func (vvm *VVM) _add(src *Token, dst *Token) error {
 				if err != nil {
 					return err
 				}
-				vvm.regC = NewToken(_FLOAT, _ILLEGALOpcode, strconv.FormatFloat(target+diff, 'f', -1, 64))
+				vvm.regC = NewToken(_FLOAT, ILLEGALOpcode, strconv.FormatFloat(target+diff, 'f', -1, 64))
 			}
 		}
 	case _ADDR:
@@ -435,7 +435,7 @@ func (vvm *VVM) _add(src *Token, dst *Token) error {
 			if err != nil {
 				return err
 			}
-			vvm.stack[pointer] = NewToken(_INT, _ILLEGALOpcode, strconv.Itoa(target+diff))
+			vvm.stack[pointer] = NewToken(_INT, ILLEGALOpcode, strconv.Itoa(target+diff))
 		case _FLOAT:
 			diff, err := srcTok.LoadAsFloat()
 			if err != nil {
@@ -445,7 +445,7 @@ func (vvm *VVM) _add(src *Token, dst *Token) error {
 			if err != nil {
 				return err
 			}
-			vvm.stack[pointer] = NewToken(_FLOAT, _ILLEGALOpcode, strconv.FormatFloat(target+diff, 'f', -1, 64))
+			vvm.stack[pointer] = NewToken(_FLOAT, ILLEGALOpcode, strconv.FormatFloat(target+diff, 'f', -1, 64))
 		}
 	}
 
@@ -489,7 +489,7 @@ func (vvm *VVM) _sub(src *Token, dst *Token) error {
 				if err != nil {
 					return err
 				}
-				vvm.regA = NewToken(_INT, _ILLEGALOpcode, strconv.Itoa(target-diff))
+				vvm.regA = NewToken(_INT, ILLEGALOpcode, strconv.Itoa(target-diff))
 			case _FLOAT:
 				diff, err := srcTok.LoadAsFloat()
 				if err != nil {
@@ -499,7 +499,7 @@ func (vvm *VVM) _sub(src *Token, dst *Token) error {
 				if err != nil {
 					return err
 				}
-				vvm.regA = NewToken(_FLOAT, _ILLEGALOpcode, strconv.FormatFloat(target-diff, 'f', -1, 64))
+				vvm.regA = NewToken(_FLOAT, ILLEGALOpcode, strconv.FormatFloat(target-diff, 'f', -1, 64))
 			}
 		case "reg_b":
 			if !vvm.isSameTokenType(src.typ, vvm.regB.typ) {
@@ -515,7 +515,7 @@ func (vvm *VVM) _sub(src *Token, dst *Token) error {
 				if err != nil {
 					return err
 				}
-				vvm.regB = NewToken(_INT, _ILLEGALOpcode, strconv.Itoa(target-diff))
+				vvm.regB = NewToken(_INT, ILLEGALOpcode, strconv.Itoa(target-diff))
 			case _FLOAT:
 				diff, err := srcTok.LoadAsFloat()
 				if err != nil {
@@ -525,7 +525,7 @@ func (vvm *VVM) _sub(src *Token, dst *Token) error {
 				if err != nil {
 					return err
 				}
-				vvm.regB = NewToken(_FLOAT, _ILLEGALOpcode, strconv.FormatFloat(target-diff, 'f', -1, 64))
+				vvm.regB = NewToken(_FLOAT, ILLEGALOpcode, strconv.FormatFloat(target-diff, 'f', -1, 64))
 			}
 		case "reg_c":
 			if !vvm.isSameTokenType(src.typ, vvm.regC.typ) {
@@ -541,7 +541,7 @@ func (vvm *VVM) _sub(src *Token, dst *Token) error {
 				if err != nil {
 					return err
 				}
-				vvm.regC = NewToken(_INT, _ILLEGALOpcode, strconv.Itoa(target-diff))
+				vvm.regC = NewToken(_INT, ILLEGALOpcode, strconv.Itoa(target-diff))
 			case _FLOAT:
 				diff, err := srcTok.LoadAsFloat()
 				if err != nil {
@@ -551,7 +551,7 @@ func (vvm *VVM) _sub(src *Token, dst *Token) error {
 				if err != nil {
 					return err
 				}
-				vvm.regC = NewToken(_FLOAT, _ILLEGALOpcode, strconv.FormatFloat(target-diff, 'f', -1, 64))
+				vvm.regC = NewToken(_FLOAT, ILLEGALOpcode, strconv.FormatFloat(target-diff, 'f', -1, 64))
 			}
 		}
 	case _ADDR:
@@ -572,7 +572,7 @@ func (vvm *VVM) _sub(src *Token, dst *Token) error {
 			if err != nil {
 				return err
 			}
-			vvm.stack[pointer] = NewToken(_INT, _ILLEGALOpcode, strconv.Itoa(target-diff))
+			vvm.stack[pointer] = NewToken(_INT, ILLEGALOpcode, strconv.Itoa(target-diff))
 		case _FLOAT:
 			diff, err := srcTok.LoadAsFloat()
 			if err != nil {
@@ -582,7 +582,7 @@ func (vvm *VVM) _sub(src *Token, dst *Token) error {
 			if err != nil {
 				return err
 			}
-			vvm.stack[pointer] = NewToken(_FLOAT, _ILLEGALOpcode, strconv.FormatFloat(target-diff, 'f', -1, 64))
+			vvm.stack[pointer] = NewToken(_FLOAT, ILLEGALOpcode, strconv.FormatFloat(target-diff, 'f', -1, 64))
 		}
 	}
 
@@ -672,7 +672,7 @@ func (vvm *VVM) _jz(to Token) error {
 		}
 		vvm.pc = newPc
 	} else {
-		vvm.movePc(1 + OperandHowManyHas(_JZ))
+		vvm.movePc(1 + OperandHowManyHas(JZ))
 	}
 
 	return nil
@@ -690,7 +690,7 @@ func (vvm *VVM) _jnz(to Token) error {
 		}
 		vvm.pc = newPc
 	} else {
-		vvm.movePc(1 + OperandHowManyHas(_JNZ))
+		vvm.movePc(1 + OperandHowManyHas(JNZ))
 	}
 
 	return nil
@@ -701,7 +701,7 @@ func (vvm *VVM) _call(op Token) error {
 	if err := vvm.subSp(1); err != nil {
 		return err
 	}
-	vvm.stack[vvm.sp] = NewToken(_RTNAddr, _ILLEGALOpcode, strconv.Itoa(vvm.pc+2))
+	vvm.stack[vvm.sp] = NewToken(_RTNAddr, ILLEGALOpcode, strconv.Itoa(vvm.pc+2))
 	addrWeAreGoing := op
 	newPc, err := addrWeAreGoing.LoadAsInt()
 	if err != nil {
@@ -759,9 +759,9 @@ func (vvm *VVM) _cp(src Token, dst Token) error {
 	case _POINTER:
 		switch src.lit {
 		case "bp":
-			srcTok = NewToken(_INT, _ILLEGALOpcode, strconv.Itoa(vvm.bp))
+			srcTok = NewToken(_INT, ILLEGALOpcode, strconv.Itoa(vvm.bp))
 		case "sp":
-			srcTok = NewToken(_INT, _ILLEGALOpcode, strconv.Itoa(vvm.sp))
+			srcTok = NewToken(_INT, ILLEGALOpcode, strconv.Itoa(vvm.sp))
 		}
 	}
 
@@ -835,9 +835,9 @@ func (vvm *VVM) _push(data Token) error {
 	case _POINTER:
 		switch data.lit {
 		case "bp":
-			dataTok = NewToken(_INT, _ILLEGALOpcode, strconv.Itoa(vvm.bp))
+			dataTok = NewToken(_INT, ILLEGALOpcode, strconv.Itoa(vvm.bp))
 		case "sp":
-			dataTok = NewToken(_INT, _ILLEGALOpcode, strconv.Itoa(vvm.sp))
+			dataTok = NewToken(_INT, ILLEGALOpcode, strconv.Itoa(vvm.sp))
 		}
 	default:
 		return UnexpectedTokenTypeErr("push", []TokenType{_REGISTER, _ADDR, _STRING, _INT, _FLOAT}, data.typ)

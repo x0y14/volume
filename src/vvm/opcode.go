@@ -8,77 +8,77 @@ type Opcode int
 
 const (
 	_ Opcode = iota
-	_ILLEGALOpcode
+	ILLEGALOpcode
 
-	_NOP
+	NOP
 
-	_SET // ?
+	SET // ?
 
-	_ADD
-	_SUB
-	_CMP
+	ADD
+	SUB
+	CMP
 
-	_SJOIN
+	SJOIN
 
-	_JUMP
-	_JZ
-	_JNZ
+	JUMP
+	JZ
+	JNZ
 
-	_CALL
-	_RET
+	CALL
+	RET
 
-	_CP
+	CP
 
-	_PUSH
-	_POP
+	PUSH
+	POP
 
-	_ADDsp
-	_SUBsp
+	ADDsp
+	SUBsp
 
-	_ECHO
+	ECHO
 
-	_EXIT
+	EXIT
 )
 
 func (opc Opcode) String() string {
 	switch opc {
-	case _NOP:
+	case NOP:
 		return "nop"
-	case _SET:
+	case SET:
 		return "set"
-	case _ADD:
+	case ADD:
 		return "add"
-	case _SUB:
+	case SUB:
 		return "sub"
-	case _CMP:
+	case CMP:
 		return "cmp"
-	case _SJOIN:
+	case SJOIN:
 		return "sjoin"
-	case _JUMP:
+	case JUMP:
 		return "jump"
-	case _JZ:
+	case JZ:
 		return "jz"
-	case _JNZ:
+	case JNZ:
 		return "jnz"
-	case _CALL:
+	case CALL:
 		return "call"
-	case _RET:
+	case RET:
 		return "ret"
-	case _CP:
+	case CP:
 		return "cp"
-	case _PUSH:
+	case PUSH:
 		return "push"
-	case _POP:
+	case POP:
 		return "pop"
-	case _ADDsp:
+	case ADDsp:
 		return "add_sp"
-	case _SUBsp:
+	case SUBsp:
 		return "sub_sp"
-	case _ECHO:
+	case ECHO:
 		return "echo"
-	case _EXIT:
+	case EXIT:
 		return "exit"
-	case _ILLEGALOpcode:
+	case ILLEGALOpcode:
 		return "illegal"
 	default:
 		return "illegal"
@@ -88,53 +88,53 @@ func (opc Opcode) String() string {
 func ConvertOpcode(code string) Opcode {
 	switch strings.ToLower(code) {
 	case "nop":
-		return _NOP
+		return NOP
 
 	case "set":
-		return _SET
+		return SET
 
 	case "add":
-		return _ADD
+		return ADD
 	case "sub":
-		return _SUB
+		return SUB
 	case "cmp":
-		return _CMP
+		return CMP
 
 	case "sjoin":
-		return _SJOIN
+		return SJOIN
 
 	case "jump":
-		return _JUMP
+		return JUMP
 	case "jz":
-		return _JZ
+		return JZ
 	case "jnz":
-		return _JNZ
+		return JNZ
 
 	case "call":
-		return _CALL
+		return CALL
 	case "ret":
-		return _RET
+		return RET
 
 	case "cp":
-		return _CP
+		return CP
 
 	case "push":
-		return _PUSH
+		return PUSH
 	case "pop":
-		return _POP
+		return POP
 
 	case "add_sp":
-		return _ADDsp
+		return ADDsp
 	case "sub_sp":
-		return _SUBsp
+		return SUBsp
 
 	case "echo":
-		return _ECHO
+		return ECHO
 
 	case "exit":
-		return _EXIT
+		return EXIT
 	default:
-		return _ILLEGALOpcode
+		return ILLEGALOpcode
 	}
 }
 
@@ -142,51 +142,51 @@ func OperandHowManyHas(typ Opcode) int {
 	//typ := ConvertOpcode(code)
 
 	switch typ {
-	case _NOP:
+	case NOP:
 		return 0
 
-	case _SET:
+	case SET:
 		return 2
 
-	case _ADD:
+	case ADD:
 		return 2
-	case _SUB:
+	case SUB:
 		return 2
-	case _CMP:
-		return 2
-
-	case _SJOIN:
+	case CMP:
 		return 2
 
-	case _JUMP:
+	case SJOIN:
+		return 2
+
+	case JUMP:
 		return 1
-	case _JZ:
+	case JZ:
 		return 1
-	case _JNZ:
+	case JNZ:
 		return 1
 
-	case _CALL:
+	case CALL:
 		return 1
-	case _RET:
+	case RET:
 		return 0
 
-	case _CP:
+	case CP:
 		return 2
 
-	case _PUSH:
+	case PUSH:
 		return 1
-	case _POP:
-		return 1
-
-	case _ADDsp:
-		return 1
-	case _SUBsp:
+	case POP:
 		return 1
 
-	case _ECHO:
+	case ADDsp:
+		return 1
+	case SUBsp:
 		return 1
 
-	case _EXIT:
+	case ECHO:
+		return 1
+
+	case EXIT:
 		return 0
 
 	default:

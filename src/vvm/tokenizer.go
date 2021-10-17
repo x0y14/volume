@@ -83,7 +83,7 @@ func (tk *Tokenizer) consumeKeyword() *Token {
 		case _POINTERKeyWord:
 			return &Token{
 				typ:  _POINTER,
-				op:   _ILLEGALOpcode,
+				op:   ILLEGALOpcode,
 				lit:  literal,
 				sPos: sPos,
 				ePos: ePos,
@@ -91,7 +91,7 @@ func (tk *Tokenizer) consumeKeyword() *Token {
 		case _REGISTERKeyWord:
 			return &Token{
 				typ:  _REGISTER,
-				op:   _ILLEGALOpcode,
+				op:   ILLEGALOpcode,
 				lit:  literal,
 				sPos: sPos,
 				ePos: ePos,
@@ -99,7 +99,7 @@ func (tk *Tokenizer) consumeKeyword() *Token {
 		default:
 			return &Token{
 				typ:  _ILLEGALToken,
-				op:   _ILLEGALOpcode,
+				op:   ILLEGALOpcode,
 				lit:  literal,
 				sPos: sPos,
 				ePos: ePos,
@@ -162,7 +162,7 @@ func (tk *Tokenizer) consumeNumeric() (*Token, error) {
 
 	return &Token{
 		typ:  typ,
-		op:   _ILLEGALOpcode,
+		op:   ILLEGALOpcode,
 		lit:  literal,
 		sPos: sPos,
 		ePos: ePos,
@@ -226,7 +226,7 @@ func (tk *Tokenizer) consumeString() *Token {
 
 	return &Token{
 		typ:  _STRING,
-		op:   _ILLEGALOpcode,
+		op:   ILLEGALOpcode,
 		lit:  literal,
 		sPos: sPos,
 		ePos: ePos,
@@ -251,7 +251,7 @@ func (tk *Tokenizer) consumeComment() *Token {
 
 	return &Token{
 		typ:  _COMMENT,
-		op:   _ILLEGALOpcode,
+		op:   ILLEGALOpcode,
 		lit:  literal,
 		sPos: sPos,
 		ePos: ePos,
@@ -282,7 +282,7 @@ func (tk *Tokenizer) consumeAddr() *Token {
 
 	return &Token{
 		typ:  _ADDR,
-		op:   _ILLEGALOpcode,
+		op:   ILLEGALOpcode,
 		lit:  literal,
 		sPos: sPos,
 		ePos: ePos,
