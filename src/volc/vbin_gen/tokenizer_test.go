@@ -6,8 +6,8 @@ import (
 )
 
 func TestNewTokenizer(t *testing.T) {
-	tokenizer := NewTokenizer("main:\n \tcp \"hello\", reg_a\n\tadd 1, reg_b ; src dst\n\tsub 1.3 reg_c\n\texit")
-	tokens, err := tokenizer.Tokenize()
+	tokenizer := NewTokenizer("main:\n \tcp \"hello\", reg_a\n\tadd reg_b, [bp-3] ; src dst\n\tsub 1.3 [sp+1]\n\texit")
+	tokens, err := tokenizer.Tokenize(nil)
 	if err != nil {
 		t.Fatal(err)
 	}
