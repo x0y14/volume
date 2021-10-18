@@ -15,6 +15,10 @@ func TestTokenizer_Tokenize(t *testing.T) {
 			"comment",
 			"../../../sample/volume/comment.vol",
 		},
+		{
+			"main only",
+			"../../../sample/volume/main_println.vol",
+		},
 	}
 
 	for _, test := range tests {
@@ -26,7 +30,7 @@ func TestTokenizer_Tokenize(t *testing.T) {
 			text := string(data)
 
 			tokenizer := NewTokenizer(text)
-			tokens, err := tokenizer.Tokenize()
+			tokens, err := tokenizer.Tokenize([]TokenType{WHITESPACE, NEWLINE})
 			if err != nil {
 				t.Fatal(err)
 			}

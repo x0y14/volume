@@ -309,7 +309,16 @@ func (tk *Tokenizer) consumeIllegal() Token {
 	}
 }
 
-func (tk *Tokenizer) Tokenize() ([]Token, error) {
+func (tk *Tokenizer) isIgnoreTokenType(ignore []TokenType, actual TokenType) bool {
+	for _, ig := range ignore {
+		if ig == actual {
+			return true
+		}
+	}
+	return false
+}
+
+func (tk *Tokenizer) Tokenize(ignore []TokenType) ([]Token, error) {
 	var tokens []Token
 
 	for !tk.isEof() {
@@ -342,7 +351,9 @@ func (tk *Tokenizer) Tokenize() ([]Token, error) {
 			tok = tk.consumeIllegal()
 		}
 
-		tokens = append(tokens, tok)
+		if !tk.isIgnoreTokenType(ignore, tok.typ) {
+			tokens = append(tokens, tok)
+		}
 	}
 
 	return tokens, nil
