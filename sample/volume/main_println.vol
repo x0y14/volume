@@ -1,4 +1,4 @@
-func main() int {
+func main() {
     println("hello")
     return 0
 }
