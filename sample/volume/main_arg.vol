@@ -1,0 +1,4 @@
+func main(age int) int {
+    println(age)
+    return 0
+}

@@ -30,6 +30,9 @@ const (
 	STRING // "hello"
 	INT    // 123
 	FLOAT  // 123.4
+	BOOL
+	MAP
+	LIST
 	TRUE
 	FALSE
 	NULL
@@ -110,12 +113,15 @@ var tokenTypes = [...]string{
 	NEWLINE:    "NEWLINE",
 
 	IDENT:  "IDENT",
-	STRING: "STRING",
-	INT:    "INT",
-	FLOAT:  "FLOAT",
-	TRUE:   "TRUE",
-	FALSE:  "FALSE",
-	NULL:   "NULL",
+	STRING: "string",
+	INT:    "int",
+	FLOAT:  "float",
+	BOOL:   "bool",
+	MAP:    "map",
+	LIST:   "list",
+	TRUE:   "true",
+	FALSE:  "false",
+	NULL:   "null",
 
 	EXCL:       "!",
 	NUM:        "#",
@@ -173,6 +179,10 @@ var tokenTypes = [...]string{
 	CASE:   "case",
 }
 
+func (tokenType TokenType) String() string {
+	return tokenTypes[tokenType]
+}
+
 var keywords map[string]TokenType
 
 func init() {
@@ -215,16 +225,24 @@ func Ident2Keyword(str string) TokenType {
 		return typ
 	}
 
-	switch str {
-	case "true":
-		return TRUE
-	case "false":
-		return FALSE
-	case "null":
-		return NULL
-	default:
-		return IDENT
+	for i := literal_beg + 1; i < literal_end; i++ {
+		if str == tokenTypes[i] {
+			return i
+		}
 	}
+
+	return IDENT
+
+	//switch str {
+	//case "true":
+	//	return TRUE
+	//case "false":
+	//	return FALSE
+	//case "null":
+	//	return NULL
+	//default:
+	//	return IDENT
+	//}
 }
 
 func IsOperator(c rune) bool {
@@ -281,4 +299,19 @@ func Symbol2Type(str string) TokenType {
 	}
 
 	return ILLEGAL
+}
+
+func IsMold(typ TokenType) bool {
+	//STRING // "hello"
+	//INT    // 123
+	//FLOAT  // 123.4
+	//BOOL
+	//MAP
+	//LIST
+	for _, mold := range []TokenType{STRING, INT, FLOAT, BOOL, MAP, LIST} {
+		if mold == typ {
+			return true
+		}
+	}
+	return false
 }

@@ -1,0 +1,5 @@
+func main(name string, age int) (int, string, bool) {
+    println(name)
+    println(age)
+    return 0
+}
