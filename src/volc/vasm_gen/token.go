@@ -55,6 +55,9 @@ const (
 	LT // <
 	GT // >
 
+	INCREMENT // ++
+	DECREMENT // --
+
 	EQUALEq // ==
 	QUESTEq // !=
 	PLUSEq  // +=
@@ -148,6 +151,9 @@ var tokenTypes = [...]string{
 
 	LT: "<",
 	GT: ">",
+
+	INCREMENT: "++",
+	DECREMENT: "--",
 
 	EQUALEq: "==",
 	QUESTEq: "!=",
@@ -301,7 +307,7 @@ func Symbol2Type(str string) TokenType {
 	return ILLEGAL
 }
 
-func IsMold(typ TokenType) bool {
+func IsMoldType(typ TokenType) bool {
 	//STRING // "hello"
 	//INT    // 123
 	//FLOAT  // 123.4
@@ -310,6 +316,33 @@ func IsMold(typ TokenType) bool {
 	//LIST
 	for _, mold := range []TokenType{STRING, INT, FLOAT, BOOL, MAP, LIST} {
 		if mold == typ {
+			return true
+		}
+	}
+	return false
+}
+
+func IsLiteralType(typ TokenType) bool {
+	for _, lit := range []TokenType{STRING, INT, FLOAT, TRUE, FALSE, MAP, LIST, NULL} {
+		if lit == typ {
+			return true
+		}
+	}
+	return false
+}
+
+func IsOperatorType(typ TokenType) bool {
+	for i := operator_beg + 1; i < operator_end; i++ {
+		if i == typ {
+			return true
+		}
+	}
+	return false
+}
+
+func IsAllowedType(allow []TokenType, typ TokenType) bool {
+	for _, a := range allow {
+		if a == typ {
 			return true
 		}
 	}

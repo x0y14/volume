@@ -1,0 +1,4 @@
+func main() {
+    println(name)
+    var name = "john"
+}

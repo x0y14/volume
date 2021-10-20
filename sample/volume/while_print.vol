@@ -1,0 +1,7 @@
+func main() {
+    var n = 5
+    while 0 < 5 {
+        print(n)
+        n--
+    }
+}

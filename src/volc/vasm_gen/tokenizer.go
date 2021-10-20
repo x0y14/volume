@@ -356,5 +356,12 @@ func (tk *Tokenizer) Tokenize(ignore []TokenType) ([]Token, error) {
 		}
 	}
 
+	tokens = append(tokens, Token{
+		lit:  "",
+		typ:  EOF,
+		sPos: tk.pos,
+		ePos: tk.pos + 1,
+	})
+
 	return tokens, nil
 }
