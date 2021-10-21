@@ -93,6 +93,8 @@ const (
 	symbol_end
 
 	keyword_beg
+	IMPORT
+
 	VAR
 
 	FUNC
@@ -174,6 +176,7 @@ var tokenTypes = [...]string{
 	SQUO: "'",
 	DQUO: "\"",
 
+	IMPORT: "import",
 	VAR:    "var",
 	FUNC:   "func",
 	RETURN: "return",

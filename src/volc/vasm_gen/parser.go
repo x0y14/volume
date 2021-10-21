@@ -499,7 +499,27 @@ func (ps *Parser) consumeFunc() (Node, error) {
 	return funcNode, nil
 }
 
-func (ps *Parser) Parse() (nodes []Node, err error) {
+func (ps *Parser) consumeImport() (Node, error) {
+	// consume "import"
+	ps.goNext()
+
+	var nod Node
+	if libName := ps.curt(); libName.typ != STRING {
+		return Node{}, SyntaxErr("consumeImport", STRING.String(), libName.typ.String())
+	} else {
+		nod = Node{
+			typ:      ImportLib,
+			children: nil,
+			tokTyp:   STRING,
+			tok:      libName,
+		}
+		ps.goNext()
+	}
+
+	return nod, nil
+}
+
+func (ps *Parser) Parse() (config []Node, nodes []Node, err error) {
 tokenLoop:
 	for !ps.isEof() {
 		tok := ps.curt()
@@ -507,18 +527,17 @@ tokenLoop:
 		case FUNC:
 			var nod Node
 			nod, err = ps.consumeFunc()
-			//fmt.Printf("%v\n", nod)
 			nod.Status()
 			nodes = append(nodes, nod)
-		//case VAR:
-		//	var nod Node
-		//	nod, err = ps.consumeDefineVariable()
-		//	nod.Status()
+		case IMPORT:
+			var nod Node
+			nod, err = ps.consumeImport()
+			config = append(config, nod)
 		default:
 			fmt.Printf("%v\n", tok.String())
 			break tokenLoop
 		}
 	}
 
-	return nodes, err
+	return config, nodes, err
 }

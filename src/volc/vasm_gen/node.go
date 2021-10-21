@@ -7,6 +7,8 @@ type NodeType int
 const (
 	_ NodeType = iota
 
+	ImportLib
+
 	FuncDefine
 	FuncArgs
 	FuncReturnValueCase

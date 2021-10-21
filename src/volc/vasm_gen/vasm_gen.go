@@ -16,6 +16,7 @@ func NewVasmGenWithPath(path string) VasmGen {
 
 type VasmGen struct {
 	text            string
+	config          []Node
 	nodes           []Node
 	definedVariable []string
 }
@@ -28,13 +29,24 @@ func (vg *VasmGen) Prepare() error {
 	}
 
 	parser := NewParser(tokens)
-	nodes, err := parser.Parse()
+	conf, nodes, err := parser.Parse()
 	if err != nil {
 		return err
 	}
+	vg.config = conf
 	vg.nodes = nodes
 
 	return nil
+}
+
+func (vg *VasmGen) LibNeedForBuild() []string {
+	var lib []string
+	for _, conf := range vg.config {
+		if conf.typ == ImportLib {
+			lib = append(lib, conf.tok.lit)
+		}
+	}
+	return lib
 }
 
 func (vg *VasmGen) GenerateCode() (string, error) {

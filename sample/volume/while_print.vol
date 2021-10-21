@@ -1,4 +1,4 @@
-import stdio.vol
+import "stdio"
 
 func main() {
     var n = 5
