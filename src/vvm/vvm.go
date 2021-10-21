@@ -1247,6 +1247,7 @@ func (vvm *VVM) _pop(popTo Token) error {
 	// popTo: [registers, addr]
 	// addr to pos
 	data := vvm.stack[vvm.sp]
+	vvm.stack[vvm.sp] = nil
 
 	switch popTo.typ {
 	case _REGISTER:
