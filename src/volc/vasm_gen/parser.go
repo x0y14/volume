@@ -277,7 +277,7 @@ func (ps *Parser) consumeCallFunc() (Node, error) {
 }
 
 func (ps *Parser) consumeExpr() (Node, error) {
-	allowed := []TokenType{INCREMENT, DECREMENT, LT}
+	allowed := []TokenType{INCREMENT, DECREMENT, LT, QUESTEq}
 
 	var expr Node
 
@@ -307,7 +307,7 @@ func (ps *Parser) consumeExpr() (Node, error) {
 		}
 	}
 
-	if val := ps.curt(); !IsAllowedType([]TokenType{INT}, val.typ) {
+	if val := ps.curt(); !IsAllowedType([]TokenType{INT, IDENT}, val.typ) {
 		return Node{}, NotYetImplementedErr("consumeExpr", val.lit)
 	} else {
 		expr.children = append(expr.children, Node{
