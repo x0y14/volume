@@ -79,3 +79,23 @@ func TestVM_FOT_LOOP_ECHO(t *testing.T) {
 	vm.SetUp(20, "../../sample/vbin/for_loop_echo.vol.b")
 	vm.Execute()
 }
+
+func TestVM_Script(t *testing.T) {
+	var tests = []struct {
+		title string
+		path  string
+	}{
+		{
+			"while print",
+			"../../sample/vbin/while_print_expect.vol.b",
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.title, func(t *testing.T) {
+			vm := NewVM()
+			vm.SetUp(30, test.path)
+			vm.Execute()
+		})
+	}
+}

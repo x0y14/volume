@@ -155,6 +155,16 @@ func (vvm *VVM) Execute() {
 			vvm.movePc(1)
 		}
 	}
+
+	fmt.Printf("stream:\n")
+	fmt.Printf("[ ")
+	for i, text := range vvm.stream {
+		fmt.Printf("%v", text)
+		if len(vvm.stream)-1 != i {
+			fmt.Printf(", ")
+		}
+	}
+	fmt.Printf(" ]\n")
 }
 
 func (vvm *VVM) executeOpcode(opcode Opcode, args []Token) (exit bool, err error) {
