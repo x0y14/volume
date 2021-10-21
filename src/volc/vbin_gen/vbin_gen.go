@@ -1,6 +1,9 @@
 package vbin_gen
 
-import "strconv"
+import (
+	"os"
+	"strconv"
+)
 
 func NewVBinGen(ops []Operation) *VBinGen {
 	return &VBinGen{
@@ -75,4 +78,41 @@ func (vbg *VBinGen) AsLine() []string {
 	}
 
 	return line
+}
+
+func (vbg *VBinGen) Export(path string) error {
+	var file *os.File
+
+	if _, err := os.Stat(path); err == nil {
+		if err := os.Remove(path); err != nil {
+			return err
+		}
+		f, err := os.Create(path)
+		if err != nil {
+			return err
+		}
+		file = f
+	} else if os.IsNotExist(err) {
+		// path/to/whatever does *not* exist
+		f, err := os.Create(path)
+		if err != nil {
+			return err
+		}
+		file = f
+	} else {
+		return err
+	}
+
+	defer func(file *os.File) {
+		err := file.Close()
+		if err != nil {
+			panic(err)
+		}
+	}(file)
+
+	if _, err := file.WriteString(vbg.AsString()); err != nil {
+		return err
+	}
+
+	return nil
 }
