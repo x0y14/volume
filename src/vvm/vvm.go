@@ -124,7 +124,7 @@ func (vvm *VVM) IsValidPointerLocation(pointerType PointerType, pointer int) boo
 //	}
 //}
 
-func (vvm *VVM) Execute() {
+func (vvm *VVM) Execute() []string {
 	lineNo := 1
 
 	for !vvm.isProgEof() {
@@ -165,6 +165,7 @@ func (vvm *VVM) Execute() {
 		}
 	}
 	fmt.Printf(" ]\n")
+	return vvm.stream
 }
 
 func (vvm *VVM) executeOpcode(opcode Opcode, args []Token) (exit bool, err error) {
@@ -185,11 +186,24 @@ func (vvm *VVM) executeOpcode(opcode Opcode, args []Token) (exit bool, err error
 	case SUB:
 		err = vvm._sub(&args[0], &args[1])
 		vvm.movePc(1 + OperandHowManyHas(opcode))
+
 	case CMP:
 		err = vvm._cmp(args[0], args[1])
 		vvm.movePc(1 + OperandHowManyHas(opcode))
+	case LT:
+		err = vvm._lt(args[0], args[1])
+		vvm.movePc(1 + OperandHowManyHas(opcode))
+	case GT:
+		err = vvm._gt(args[0], args[1])
+		vvm.movePc(1 + OperandHowManyHas(opcode))
+	case LTE:
+		err = vvm._lte(args[0], args[1])
+		vvm.movePc(1 + OperandHowManyHas(opcode))
+	case GTE:
+		err = vvm._gte(args[0], args[1])
+		vvm.movePc(1 + OperandHowManyHas(opcode))
 
-	case JUMP:
+	case JMP:
 		err = vvm._jump(args[0])
 	case JZ:
 		err = vvm._jz(args[0])
@@ -661,6 +675,370 @@ func (vvm *VVM) _cmp(data1 Token, data2 Token) error {
 	return nil
 }
 
+func (vvm *VVM) _lt(data1 Token, data2 Token) error {
+	// data1: [registers, addr, int, float]
+	// data2: [registers, addr, int, float]
+
+	// 型と、litしか見ない。
+
+	var tok1 Token
+	var tok2 Token
+
+	switch data1.typ {
+	case _REGISTER:
+		switch data1.lit {
+		case "reg_a":
+			tok1 = *vvm.regA
+		case "reg_b":
+			tok1 = *vvm.regB
+		case "reg_c":
+			tok1 = *vvm.regC
+		}
+	case _ADDR:
+		t, err := vvm.addrToToken(data1.lit)
+		if err != nil {
+			return err
+		}
+		tok1 = *t
+	case _INT, _FLOAT:
+		tok1 = data1
+	}
+
+	switch data2.typ {
+	case _REGISTER:
+		switch data2.lit {
+		case "reg_a":
+			tok2 = *vvm.regA
+		case "reg_b":
+			tok2 = *vvm.regB
+		case "reg_c":
+			tok2 = *vvm.regC
+		}
+	case _ADDR:
+		t, err := vvm.addrToToken(data2.lit)
+		if err != nil {
+			return err
+		}
+		tok2 = *t
+	case _INT, _FLOAT:
+		tok2 = data2
+	}
+
+	// 型おなじ?
+	if !vvm.isSameTokenType(tok1.typ, tok2.typ) {
+		vvm.zf = 0
+	}
+
+	if tok1.typ != _INT && tok1.typ != _FLOAT {
+		return UnexpectedTokenTypeErr("lt", []TokenType{_INT, _FLOAT}, tok1.typ)
+	}
+
+	var result bool
+
+	if tok1.typ == _FLOAT {
+		a1, err := tok1.LoadAsFloat()
+		if err != nil {
+			return err
+		}
+		a2, err := tok2.LoadAsFloat()
+		if err != nil {
+			return err
+		}
+		result = a1 < a2
+	} else {
+		a1, err := tok1.LoadAsInt()
+		if err != nil {
+			return err
+		}
+		a2, err := tok2.LoadAsInt()
+		if err != nil {
+			return err
+		}
+		result = a1 < a2
+	}
+
+	if result {
+		vvm.zf = 1
+	} else {
+		vvm.zf = 0
+	}
+
+	return nil
+}
+
+func (vvm *VVM) _lte(data1 Token, data2 Token) error {
+	// data1: [registers, addr, int, float]
+	// data2: [registers, addr, int, float]
+
+	// 型と、litしか見ない。
+
+	var tok1 Token
+	var tok2 Token
+
+	switch data1.typ {
+	case _REGISTER:
+		switch data1.lit {
+		case "reg_a":
+			tok1 = *vvm.regA
+		case "reg_b":
+			tok1 = *vvm.regB
+		case "reg_c":
+			tok1 = *vvm.regC
+		}
+	case _ADDR:
+		t, err := vvm.addrToToken(data1.lit)
+		if err != nil {
+			return err
+		}
+		tok1 = *t
+	case _INT, _FLOAT:
+		tok1 = data1
+	}
+
+	switch data2.typ {
+	case _REGISTER:
+		switch data2.lit {
+		case "reg_a":
+			tok2 = *vvm.regA
+		case "reg_b":
+			tok2 = *vvm.regB
+		case "reg_c":
+			tok2 = *vvm.regC
+		}
+	case _ADDR:
+		t, err := vvm.addrToToken(data2.lit)
+		if err != nil {
+			return err
+		}
+		tok2 = *t
+	case _INT, _FLOAT:
+		tok2 = data2
+	}
+
+	// 型おなじ?
+	if !vvm.isSameTokenType(tok1.typ, tok2.typ) {
+		vvm.zf = 0
+	}
+
+	if tok1.typ != _INT && tok1.typ != _FLOAT {
+		return UnexpectedTokenTypeErr("lt", []TokenType{_INT, _FLOAT}, tok1.typ)
+	}
+
+	var result bool
+
+	if tok1.typ == _FLOAT {
+		a1, err := tok1.LoadAsFloat()
+		if err != nil {
+			return err
+		}
+		a2, err := tok2.LoadAsFloat()
+		if err != nil {
+			return err
+		}
+		result = a1 <= a2
+	} else {
+		a1, err := tok1.LoadAsInt()
+		if err != nil {
+			return err
+		}
+		a2, err := tok2.LoadAsInt()
+		if err != nil {
+			return err
+		}
+		result = a1 <= a2
+	}
+
+	if result {
+		vvm.zf = 1
+	} else {
+		vvm.zf = 0
+	}
+
+	return nil
+}
+
+func (vvm *VVM) _gt(data1 Token, data2 Token) error {
+	// data1: [registers, addr, int, float]
+	// data2: [registers, addr, int, float]
+
+	// 型と、litしか見ない。
+
+	var tok1 Token
+	var tok2 Token
+
+	switch data1.typ {
+	case _REGISTER:
+		switch data1.lit {
+		case "reg_a":
+			tok1 = *vvm.regA
+		case "reg_b":
+			tok1 = *vvm.regB
+		case "reg_c":
+			tok1 = *vvm.regC
+		}
+	case _ADDR:
+		t, err := vvm.addrToToken(data1.lit)
+		if err != nil {
+			return err
+		}
+		tok1 = *t
+	case _INT, _FLOAT:
+		tok1 = data1
+	}
+
+	switch data2.typ {
+	case _REGISTER:
+		switch data2.lit {
+		case "reg_a":
+			tok2 = *vvm.regA
+		case "reg_b":
+			tok2 = *vvm.regB
+		case "reg_c":
+			tok2 = *vvm.regC
+		}
+	case _ADDR:
+		t, err := vvm.addrToToken(data2.lit)
+		if err != nil {
+			return err
+		}
+		tok2 = *t
+	case _INT, _FLOAT:
+		tok2 = data2
+	}
+
+	// 型おなじ?
+	if !vvm.isSameTokenType(tok1.typ, tok2.typ) {
+		vvm.zf = 0
+	}
+
+	if tok1.typ != _INT && tok1.typ != _FLOAT {
+		return UnexpectedTokenTypeErr("lt", []TokenType{_INT, _FLOAT}, tok1.typ)
+	}
+
+	var result bool
+
+	if tok1.typ == _FLOAT {
+		a1, err := tok1.LoadAsFloat()
+		if err != nil {
+			return err
+		}
+		a2, err := tok2.LoadAsFloat()
+		if err != nil {
+			return err
+		}
+		result = a1 > a2
+	} else {
+		a1, err := tok1.LoadAsInt()
+		if err != nil {
+			return err
+		}
+		a2, err := tok2.LoadAsInt()
+		if err != nil {
+			return err
+		}
+		result = a1 > a2
+	}
+
+	if result {
+		vvm.zf = 1
+	} else {
+		vvm.zf = 0
+	}
+
+	return nil
+}
+
+func (vvm *VVM) _gte(data1 Token, data2 Token) error {
+	// data1: [registers, addr, int, float]
+	// data2: [registers, addr, int, float]
+
+	// 型と、litしか見ない。
+
+	var tok1 Token
+	var tok2 Token
+
+	switch data1.typ {
+	case _REGISTER:
+		switch data1.lit {
+		case "reg_a":
+			tok1 = *vvm.regA
+		case "reg_b":
+			tok1 = *vvm.regB
+		case "reg_c":
+			tok1 = *vvm.regC
+		}
+	case _ADDR:
+		t, err := vvm.addrToToken(data1.lit)
+		if err != nil {
+			return err
+		}
+		tok1 = *t
+	case _INT, _FLOAT:
+		tok1 = data1
+	}
+
+	switch data2.typ {
+	case _REGISTER:
+		switch data2.lit {
+		case "reg_a":
+			tok2 = *vvm.regA
+		case "reg_b":
+			tok2 = *vvm.regB
+		case "reg_c":
+			tok2 = *vvm.regC
+		}
+	case _ADDR:
+		t, err := vvm.addrToToken(data2.lit)
+		if err != nil {
+			return err
+		}
+		tok2 = *t
+	case _INT, _FLOAT:
+		tok2 = data2
+	}
+
+	// 型おなじ?
+	if !vvm.isSameTokenType(tok1.typ, tok2.typ) {
+		vvm.zf = 0
+	}
+
+	if tok1.typ != _INT && tok1.typ != _FLOAT {
+		return UnexpectedTokenTypeErr("lt", []TokenType{_INT, _FLOAT}, tok1.typ)
+	}
+
+	var result bool
+
+	if tok1.typ == _FLOAT {
+		a1, err := tok1.LoadAsFloat()
+		if err != nil {
+			return err
+		}
+		a2, err := tok2.LoadAsFloat()
+		if err != nil {
+			return err
+		}
+		result = a1 >= a2
+	} else {
+		a1, err := tok1.LoadAsInt()
+		if err != nil {
+			return err
+		}
+		a2, err := tok2.LoadAsInt()
+		if err != nil {
+			return err
+		}
+		result = a1 >= a2
+	}
+
+	if result {
+		vvm.zf = 1
+	} else {
+		vvm.zf = 0
+	}
+
+	return nil
+}
+
 func (vvm *VVM) _jump(to Token) error {
 	newPc, err := to.LoadAsInt()
 	if err != nil {
@@ -705,6 +1083,10 @@ func (vvm *VVM) _jnz(to Token) error {
 
 	return nil
 }
+
+//func (vvm *VVM) _je(a1 Token, a2 Token) error {
+//	return nil
+//}
 
 func (vvm *VVM) _call(op Token) error {
 	// op: [int] as pc
@@ -967,6 +1349,10 @@ func (vvm *VVM) _echo(data Token) error {
 			return err
 		}
 		dataTok = *tok
+	default:
+		if data.lit == "zf" {
+			dataTok = *NewToken(_ILLEGALToken, ILLEGALOpcode, strconv.Itoa(vvm.zf))
+		}
 	}
 
 	vvm.writeStream(dataTok.lit)

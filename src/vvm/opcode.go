@@ -16,13 +16,24 @@ const (
 
 	ADD
 	SUB
+
 	CMP
+	LT  // <
+	GT  // >
+	LTE // <=
+	GTE // >=
 
 	SJOIN
 
-	JUMP
-	JZ
-	JNZ
+	JMP
+	JZ  // jump zf == 0
+	JNZ // jump zf != 0
+	JE  // jump a1 == a2
+	JNE // jump a1 != a2
+	JL  // jump a1 < a2
+	JLE // jump a1 <= a2
+	JG  // jump a1 > a2
+	JGE // jump a1 >= a2
 
 	CALL
 	RET
@@ -46,20 +57,44 @@ func (opc Opcode) String() string {
 		return "nop"
 	case SET:
 		return "set"
+
 	case ADD:
 		return "add"
 	case SUB:
 		return "sub"
+
 	case CMP:
 		return "cmp"
+	case LT:
+		return "lt"
+	case GT:
+		return "gt"
+	case LTE:
+		return "lte"
+	case GTE:
+		return "gte"
+
 	case SJOIN:
 		return "sjoin"
-	case JUMP:
-		return "jump"
+
+	case JMP:
+		return "jmp"
 	case JZ:
 		return "jz"
 	case JNZ:
 		return "jnz"
+	case JE:
+		return "je"
+	case JNE:
+		return "jne"
+	case JL:
+		return "jl"
+	case JLE:
+		return "jle"
+	case JG:
+		return "jg"
+	case JGE:
+		return "jge"
 	case CALL:
 		return "call"
 	case RET:
@@ -100,16 +135,36 @@ func ConvertOpcode(code string) Opcode {
 	case "cmp":
 		return CMP
 
+	case "lt":
+		return LT
+	case "gt":
+		return GT
+	case "lte":
+		return LTE
+	case "gte":
+		return GTE
+
 	case "sjoin":
 		return SJOIN
 
-	case "jump":
-		return JUMP
+	case "jmp":
+		return JMP
 	case "jz":
 		return JZ
 	case "jnz":
 		return JNZ
-
+	case "je":
+		return JE
+	case "jne":
+		return JNE
+	case "jl":
+		return JL
+	case "jle":
+		return JLE
+	case "jg":
+		return JG
+	case "jge":
+		return JGE
 	case "call":
 		return CALL
 	case "ret":
@@ -152,18 +207,39 @@ func OperandHowManyHas(typ Opcode) int {
 		return 2
 	case SUB:
 		return 2
+
 	case CMP:
+		return 2
+	case LT:
+		return 2
+	case GT:
+		return 2
+	case LTE:
+		return 2
+	case GTE:
 		return 2
 
 	case SJOIN:
 		return 2
 
-	case JUMP:
+	case JMP:
 		return 1
 	case JZ:
 		return 1
 	case JNZ:
 		return 1
+	case JE:
+		return 2
+	case JNE:
+		return 2
+	case JL:
+		return 2
+	case JLE:
+		return 2
+	case JG:
+		return 2
+	case JGE:
+		return 2
 
 	case CALL:
 		return 1
