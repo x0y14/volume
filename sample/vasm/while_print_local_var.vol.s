@@ -10,13 +10,17 @@ main:
 
     ; == 関数本体 ==
     ; 条件式に必要なデータを、ローカル変数に代入
-    sub 1 sp     ; 領域確保
-    cp 5 [bp-1]  ; 代入
+
+    sub 1 sp     ; ... : left
+    cp 0 [bp-1]  ; ... : left
+    sub 1 sp     ; 領域確保: right
+    cp 5 [bp-2]  ; 代入: right
 
     ; whileに引数として渡す。
-    push [bp-1]
+    push [bp-2] ; right
+    push [bp-1] ; left
     call main_while_loop_01_entry
-    add 1 sp     ; 引数の数、spを戻す
+    add 2 sp     ; 引数の数、spを戻す
     ; =============
 
     ; == 呼び出し前の状態に復元 ==
@@ -27,31 +31,37 @@ main:
 
 
 main_while_loop_01_entry:
+    ; left opr right
+
     ; == 戻り用 ==
     push bp
     cp sp bp
     ; ===========
-    jump main_while_loop_01_conditional_expr
+    jmp main_while_loop_01_conditional_expr
 
 main_while_loop_01_conditional_expr:
     ; == 関数本体 ==
-    ; 引数として受け取った、nをreg_aにコピー
-    cp [bp+2] reg_a
-    cmp reg_a 0
+    cp [bp+2] reg_a ; left (0)
+    cp 5 reg_b ; right(n)
+
+    cmp reg_a reg_b ; !=
     ; もし、一致しなければ、本体へ飛ぶ。
     jz main_while_loop_01_body
     ; 終了へジャンプ
-    jump main_while_loop_01_end
+    jnz main_while_loop_01_end
     ; ============
 
 main_while_loop_01_body:
     ; == 関数本体 ==
-    push reg_a
-    call print
-    add 1 sp
+    push reg_a ; プリント引数
+    call print ; プリント実行
+    add 1 sp   ; プリント後始末
+
+    ; nは、exprにおいて、rightに格納されていた。
+    cp [bp+3] reg_a
     sub 1 reg_a ; n--をしたので、データをローカル変数に再代入
-    cp reg_a [bp+2]
-    jump main_while_loop_01_conditional_expr
+    cp reg_a [bp+3]
+    jmp main_while_loop_01_conditional_expr
     ; =============
 
 main_while_loop_01_end:

@@ -1,7 +1,7 @@
 import "stdio"
 
 func main() {
-    var n = 5
+    var n = 0
     while 0 != n {
         print(n)
         n--

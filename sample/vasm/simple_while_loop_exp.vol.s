@@ -1,4 +1,6 @@
+nop
 call main
+nop
 exit
 
 

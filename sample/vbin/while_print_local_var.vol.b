@@ -3,26 +3,31 @@ exit
 push bp
 cp sp bp
 sub 1 sp
-cp 5 [bp-1]
+cp 0 [bp-1]
+sub 1 sp
+cp 5 [bp-2]
+push [bp-2]
 push [bp-1]
-call 27
-add 1 sp
+call 35
+add 2 sp
 cp bp sp
 pop bp
 ret 
 push bp
 cp sp bp
-jump 34
+jmp 42
 cp [bp+2] reg_a
-cmp reg_a 0
-jz 44
-jump 59
+cp 5 reg_b
+cmp reg_a reg_b
+jz 55
+jnz 73
 push reg_a
-call 65
+call 79
 add 1 sp
+cp [bp+3] reg_a
 sub 1 reg_a
-cp reg_a [bp+2]
-jump 34
+cp reg_a [bp+3]
+jmp 42
 cp bp sp
 pop bp
 ret 
