@@ -1,6 +1,8 @@
+import stdio.vol
+
 func main() {
     var n = 5
-    while 0 < 5 {
+    while 0 != n {
         print(n)
         n--
     }
