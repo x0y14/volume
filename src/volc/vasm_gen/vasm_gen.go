@@ -2,6 +2,7 @@ package vasm_gen
 
 import (
 	"fmt"
+	"math/rand"
 	"os"
 )
 
@@ -49,19 +50,30 @@ func (vg *VasmGen) LibNeedForBuild() []string {
 	return lib
 }
 
-func (vg *VasmGen) GenerateCode() (string, error) {
-	code := "call main\nexit\n"
+func randomString(n int) string {
+	var letters = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789")
+
+	s := make([]rune, n)
+	for i := range s {
+		s[i] = letters[rand.Intn(len(letters))]
+	}
+	return string(s)
+}
+
+func (vg *VasmGen) GenerateCode() (map[string]string, error) {
+
+	codes := map[string]string{}
+	codes["root"] = "call main\nexit\n"
 
 	for _, fRootNode := range vg.nodes {
-
-		code += "\n"
-
 		// set up prepare
 		fName := fRootNode.tok.lit
+		code := codes[fName]
 		code += fmt.Sprintf("%v:\n", fName)
-		code += "\t; 呼び出し元に戻れるように現状保存\n"
+		code += "\t; == 戻り用 ==\n"
 		code += "\tpush bp\n"
 		code += "\tcp sp bp\n"
+		code += "\t; ===========\n"
 
 		// function arguments
 		fArgs := fRootNode.children[0]
@@ -70,7 +82,7 @@ func (vg *VasmGen) GenerateCode() (string, error) {
 		}
 
 		// todo : scope
-		// 狭いscopeを使うのであれば、map[string][]stringにして、関数ごとに変数を定義させなければならない。
+		// 狭いscopeを使うのであれば、definedVariable: map[string][]stringにして、関数ごとに変数を定義させなければならない。
 		// んで、狭いスコープを実装する予定だが、とりあえず、全てグローバルスコープな実装にする。
 
 		argNo := 2
@@ -100,13 +112,36 @@ func (vg *VasmGen) GenerateCode() (string, error) {
 				valDataNode := line.children[0]
 
 				if valDataNode.tokTyp != INT && valDataNode.tokTyp != STRING && valDataNode.tokTyp != FLOAT {
-					return "", NotYetImplementedErr("GenerateCode", valDataNode.tokTyp.String())
+					return nil, NotYetImplementedErr("GenerateCode.VariableDefine.valDataNode", valDataNode.tokTyp.String())
 				}
 
 				code += "\t; ローカル変数に値を代入\n"
 				code += fmt.Sprintf("\tcp %v [bp-%v]\n", valDataNode.tok.lit, valPos)
 
 			case WhileLoop:
+				id := randomString(10)
+				thisLoopName := fmt.Sprintf("%v_while_loop_%v", fName, id)
+				entryPointLabel := fmt.Sprintf("%v_entry", thisLoopName)
+				conditionalExprLabel := fmt.Sprintf("%v_conditional_expr", thisLoopName)
+
+				// loop entry_point
+				codes[entryPointLabel] = ""
+				codes[entryPointLabel] += "\t; == 戻り用 ==\n"
+				codes[entryPointLabel] += "\tpush bp\n"
+				codes[entryPointLabel] += "\tcp sp bp\n"
+				codes[entryPointLabel] += "\t; ===========\n"
+				codes[entryPointLabel] += "\t; 条件式へ飛ぶ。\n"
+				codes[entryPointLabel] += fmt.Sprintf("\tjump %v\n", conditionalExprLabel)
+
+				// loop expr
+				codes[conditionalExprLabel] = ""
+				codes[conditionalExprLabel] += "\t; == 関数本体 ==\n"
+				opr := line.children[0]
+				if !IsAllowedType([]TokenType{LT, GT, QUESTEq, EQUALEq}, opr.tokTyp) {
+					return nil, NotYetImplementedErr("GenerateCode.whileLoop.Expr", opr.tokTyp.String())
+				}
+				//target := line.children[1]
+
 			case Expr:
 
 			}
@@ -115,7 +150,13 @@ func (vg *VasmGen) GenerateCode() (string, error) {
 		// function return value
 		//fRetVal := fRootNode.children[1]
 		// todo : 戻り値
+
+		code += "\t; == 呼び出し前の状態に復元 ==\n"
+		code += "\tcp bp sp\n"
+		code += "\tpop bp\n"
+		code += "\tret\n"
+		code += "\t; ========================\n"
 	}
 
-	return code, nil
+	return codes, nil
 }

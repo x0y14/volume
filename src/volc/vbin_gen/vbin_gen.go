@@ -5,9 +5,24 @@ import (
 	"strconv"
 )
 
-func NewVBinGen(ops []Operation) *VBinGen {
-	return &VBinGen{
-		operations: ops,
+//func NewVBinGen(ops []Operation) *VBinGen {
+//	return &VBinGen{
+//		operations: ops,
+//		labelTable: map[string]int{},
+//	}
+//}
+
+//func NewVBinGenWithPath(path string) VBinGen {
+//	data, err := os.ReadFile(path)
+//	if err != nil {
+//		panic(err)
+//	}
+//	text := string(data)
+//
+//}
+
+func NewVBinGen() VBinGen {
+	return VBinGen{
 		labelTable: map[string]int{},
 	}
 }
@@ -15,6 +30,24 @@ func NewVBinGen(ops []Operation) *VBinGen {
 type VBinGen struct {
 	operations []Operation
 	labelTable map[string]int
+}
+
+func (vbg *VBinGen) Prepare(path string) error {
+	data, err := os.ReadFile(path)
+	if err != nil {
+		panic(err)
+	}
+	text := string(data)
+
+	tokenizer := NewTokenizer(text)
+	tokens, err := tokenizer.Tokenize([]TokenType{COMMENT, NEWLINE, WHITESPACE})
+	parser := NewParser(*tokens)
+	ops, err := parser.Parse()
+	if err != nil {
+		return err
+	}
+	vbg.operations = *ops
+	return nil
 }
 
 func (vbg *VBinGen) Scan() {
@@ -43,6 +76,7 @@ func (vbg *VBinGen) replace() []Operation {
 		for _, originalOperand := range originalOp.operands {
 			if pc, ok := vbg.labelTable[originalOperand.lit]; ok {
 				// 差し替えたものを挿入
+				//lit := strconv.Itoa(pc) + "; " + originalOperand.lit
 				newOperands = append(newOperands, Operand{lit: strconv.Itoa(pc)})
 			} else {
 				// そのままを挿入

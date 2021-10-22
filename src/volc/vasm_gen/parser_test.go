@@ -68,9 +68,10 @@ func TestParser_Parse(t *testing.T) {
 			}
 
 			parser := NewParser(tokens)
-			if nodes, err := parser.Parse(); err != nil {
+			if conf, nodes, err := parser.Parse(); err != nil {
 				t.Fatal(err)
 			} else {
+				fmt.Printf("%v\n\n", conf)
 				fmt.Printf("%v\n", nodes)
 			}
 		})

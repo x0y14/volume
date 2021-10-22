@@ -1,6 +1,7 @@
 package vvm
 
 import (
+	"fmt"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
@@ -83,6 +84,12 @@ func TestVM_FOT_LOOP_ECHO(t *testing.T) {
 	vm.Execute()
 }
 
+func TestFor(t *testing.T) {
+	for i := 0; i < 3; i++ {
+		fmt.Println(i)
+	}
+}
+
 func TestVM_Script(t *testing.T) {
 	var tests = []struct {
 		title  string
@@ -97,7 +104,7 @@ func TestVM_Script(t *testing.T) {
 		{
 			"while loop n as local",
 			"../../sample/vbin/while_print_local_var.vol.b",
-			nil,
+			[]string{"0", "1", "2"},
 		},
 		{
 			"compares",
@@ -109,7 +116,7 @@ func TestVM_Script(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.title, func(t *testing.T) {
 			vm := NewVM()
-			vm.SetUp(30, test.path)
+			vm.SetUp(40, test.path)
 			stream := vm.Execute()
 			assert.Equal(t, test.stream, stream)
 		})
