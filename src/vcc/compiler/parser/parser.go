@@ -32,27 +32,27 @@ func (ps *Parser) goNext() {
 	ps.pos++
 }
 
-func (ps *Parser) _consumeFuncArgs() (Node, error) {
+func (ps *Parser) _consumeFuncFormalArgs() (Node, error) {
 	// "("
-	if _lpArgs := ps.curt(); _lpArgs.Typ != tokenizer.LPAREN {
-		return Node{}, SyntaxErr("consumeFunction", tokenizer.LPAREN.String(), _lpArgs.Typ.String())
+	if _lp := ps.curt(); _lp.Typ != tokenizer.LPAREN {
+		return Node{}, SyntaxErr("consumeFunction", tokenizer.LPAREN.String(), _lp.Typ.String())
 	}
 	ps.goNext()
 
 	var arguments []Node
 
-	// <args>
+	// FuncArg
 argsLoop:
-	for !ps.isEof() {
+	for ps.curt().Typ != tokenizer.RPAREN {
 		ident := ps.curt()
 		if ident.Typ != tokenizer.IDENT {
-			return Node{}, SyntaxErr("_consumeFuncArgs", tokenizer.IDENT.String(), ident.Typ.String())
+			return Node{}, SyntaxErr("_consumeFuncFormalArgs", tokenizer.IDENT.String(), ident.Typ.String())
 		}
 		ps.goNext()
 
 		typ := ps.curt()
 		if !tokenizer.IsMoldType(typ.Typ) {
-			return Node{}, SyntaxErr("_consumeFuncArgs", "MOLD", typ.Typ.String())
+			return Node{}, SyntaxErr("_consumeFuncFormalArgs", "MOLD", typ.Typ.String())
 		}
 		ps.goNext()
 
@@ -74,8 +74,8 @@ argsLoop:
 	}
 
 	// ")"
-	if _rpArgs := ps.curt(); _rpArgs.Typ != tokenizer.RPAREN {
-		return Node{}, SyntaxErr("consumeFunction", tokenizer.RPAREN.String(), _rpArgs.Typ.String())
+	if _rp := ps.curt(); _rp.Typ != tokenizer.RPAREN {
+		return Node{}, SyntaxErr("consumeFunction", tokenizer.RPAREN.String(), _rp.Typ.String())
 	}
 	ps.goNext()
 
@@ -86,11 +86,90 @@ argsLoop:
 	return argumentsNode, nil
 }
 
-func (ps *Parser) consumeFunction() (Node, error) {
+func (ps *Parser) _consumeFuncRetTypes() (Node, error) {
+	// 複数の戻り値をサポートする予定はないが、構文的にはサポートしておく。
+	// もし、"("があったら、複数の値を持っている可能性がある。
+	// また、基本は型が一つ配置されている。
+	// single : int
+	// multi  : (int, int, string)
+	var fRetTypes []tokenizer.Token
+
+	if _lp := ps.curt(); _lp.Typ == tokenizer.LPAREN {
+		// multi
+		// "("
+		ps.goNext()
+
+		// retTypes
+	retTypesLoop:
+		for ps.curt().Typ != tokenizer.RPAREN {
+			ret := ps.curt()
+			if !tokenizer.IsMoldType(ret.Typ) {
+				return Node{}, SyntaxErr("_consumeFuncRetTypes", "MOLD", ret.Typ.String())
+			}
+			ps.goNext()
+
+			fRetTypes = append(fRetTypes, ret)
+
+			switch ps.curt().Typ {
+			case tokenizer.COMMA:
+				ps.goNext()
+				continue
+			case tokenizer.RPAREN:
+				break retTypesLoop
+			default:
+				return Node{}, SyntaxErr("_consumeFuncRetTypes", "COMMA, RPAREN", ps.curt().Typ.String())
+			}
+
+		}
+
+		// ")"
+		if _rp := ps.curt(); _rp.Typ != tokenizer.RPAREN {
+			return Node{}, SyntaxErr("_consumeFuncRetTypes", tokenizer.RPAREN.String(), _rp.Typ.String())
+		}
+		ps.goNext()
+
+	} else {
+		// single
+		if typ := ps.curt(); !tokenizer.IsMoldType(typ.Typ) {
+			// 戻り値が記述されていないパターン
+			if typ.Typ != tokenizer.LBRACE {
+				return Node{}, SyntaxErr("_consumeFuncRetTypes", "MOLD", typ.Typ.String())
+			}
+		} else {
+			fRetTypes = append(fRetTypes, typ)
+			ps.goNext()
+		}
+	}
+
+	fRetTypesNode := NewFuncRetTypeNode(fRetTypes)
+
+	return fRetTypesNode, nil
+}
+
+func (ps *Parser) _consumeFuncBody() (Node, error) {
+	// todo : body
+	if _lb := ps.curt(); _lb.Typ != tokenizer.LBRACE {
+		return Node{}, SyntaxErr("_consumeFuncBody", tokenizer.LBRACE.String(), _lb.Typ.String())
+	}
+	ps.goNext()
+
+	if _rb := ps.curt(); _rb.Typ != tokenizer.RBRACE {
+		return Node{}, SyntaxErr("_consumeFuncBody", tokenizer.RBRACE.String(), _rb.Typ.String())
+	}
+	ps.goNext()
+
+	fBody := NewFuncBodyNode(nil)
+
+	return fBody, nil
+}
+
+func (ps *Parser) consumeFunction() (funcNode Node, err error) {
 	// func f( <args> ) ( <ret> ) { <body> }
 
 	var fName tokenizer.Token
 	var fArgs Node
+	var fRetTypes Node
+	var fBody Node
 
 	// "func"
 	if _func := ps.curt(); _func.Typ != tokenizer.FUNC {
@@ -107,17 +186,30 @@ func (ps *Parser) consumeFunction() (Node, error) {
 	ps.goNext()
 
 	// "(" <args> ")"
-	fArgs, err := ps._consumeFuncArgs()
+	fArgs, err = ps._consumeFuncFormalArgs()
 	if err != nil {
 		return Node{}, err
 	}
+	// 関数内で、")"を読み飛ばした後なので、goNextはいらない。
 
-	// todo : retType
-	// todo : body
+	// "("? <ret> ")"?
+	fRetTypes, err = ps._consumeFuncRetTypes()
+	if err != nil {
+		return Node{}, err
+	}
+	// 関数内で、戻り値を読み飛ばしているので、goNextはいらない。
 
-	functionDefine := NewFuncDefNode(fName, fArgs, Node{}, Node{})
+	// "{" <body> "}"
+	fBody, err = ps._consumeFuncBody()
+	if err != nil {
+		return Node{}, err
+	}
+	// 関数内で、"}"を読み飛ばした後なので、goNextはいらない。
 
-	return functionDefine, nil
+	// function
+	funcNode = NewFuncDefNode(fName, fArgs, fRetTypes, fBody)
+
+	return funcNode, err
 }
 
 func (ps *Parser) Parse() error {

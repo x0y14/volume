@@ -13,8 +13,8 @@ const (
 	FuncDef        // 関数定義
 	FuncFormalArgs // 仮引数
 	FuncArg
-	FuncRetType // 戻り値型定義
-	FuncBody    // 関数本体
+	FuncRetTypes // 戻り値型定義
+	FuncBody     // 関数本体
 
 	Return // 関数戻り値
 
@@ -44,7 +44,7 @@ var nodes = [...]string{
 	FuncDef:        "FuncDef",
 	FuncFormalArgs: "FuncFormalArgs",
 	FuncArg:        "FuncArg",
-	FuncRetType:    "FuncRetType",
+	FuncRetTypes:   "FuncRetTypes",
 	FuncBody:       "FuncBody",
 
 	Return: "Return",
@@ -108,6 +108,7 @@ func (nod *Node) String() string {
 }
 
 func NewFuncDefNode(ident tokenizer.Token, formalArgs Node, retType Node, body Node) Node {
+
 	return Node{
 		typ:           FuncDef,
 		childrenToken: []tokenizer.Token{ident},
@@ -148,7 +149,7 @@ func NewFuncArgNode(ident tokenizer.Token, typ tokenizer.Token) (Node, error) {
 
 func NewFuncRetTypeNode(types []tokenizer.Token) Node {
 	return Node{
-		typ:           FuncRetType,
+		typ:           FuncRetTypes,
 		childrenToken: types,
 		childrenNode:  nil,
 	}

@@ -43,10 +43,10 @@ Node{
 }
 ```
 
-*FuncRetType*
+*FuncRetTypes*
 ```text
 Node{ 
-    typ: FuncRetType
+    typ: FuncRetTypes
     childrenToken: [
         ...
         Token{ typ: (MOLD) }
