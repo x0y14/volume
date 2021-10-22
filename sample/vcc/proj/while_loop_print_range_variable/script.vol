@@ -1,0 +1,12 @@
+import "stdio"
+
+func main() {
+    var max = 3
+    var i = 0
+
+    while i < max {
+        print(i)
+        i++
+        // increment
+    }
+}
