@@ -16,26 +16,34 @@ const (
 	FuncRetTypes // 戻り値型定義
 	FuncBody     // 関数本体
 
-	Return // 関数戻り値
+	Contents // Bodyに格納される。スクリプト本体。
 
 	CallFunc     // 関数呼び出し
 	CallFuncArgs // 関数呼び出し引数
 
-	VarDef // 変数定義
-	Subst  // 代入
+	VarDef   // 変数定義
+	VarSubst // 代入
+	VarData  // 変数の中身
 
-	Expr // 式
-	CondExpr
+	CalcExpr      // 式, +=, ++, +とか
+	CondExpr      //条件分岐用の式, Boolを求める。
+	CondExprGroup // CondExprのグループ。 CondExpr || CondExprとか、CondExpr && CondExprとか。
+	// experimental
 
-	IfBody
+	Cond // 条件分岐
 	If
 	Elif
 	Else
+	IfBody
+
+	Return // 関数戻り値
 
 	WhileLoop // while
 	ForLoop   // for
 	LoopBody
 	Break
+
+	Import
 )
 
 var nodes = [...]string{
@@ -47,35 +55,42 @@ var nodes = [...]string{
 	FuncRetTypes:   "FuncRetTypes",
 	FuncBody:       "FuncBody",
 
-	Return: "Return",
+	Contents: "Contents",
 
 	CallFunc:     "CallFunc",
 	CallFuncArgs: "CallFuncArgs",
 
-	VarDef: "VarDef",
-	Subst:  "Subst",
+	VarDef:   "VarDef",
+	VarSubst: "VarSubst",
+	VarData:  "VarData",
 
-	Expr:     "Expr",
-	CondExpr: "CondExpr",
+	CalcExpr:      "CalcExpr",
+	CondExpr:      "CondExpr",
+	CondExprGroup: "CondExprGroup",
 
-	IfBody: "IfBody",
+	Cond:   "Cond",
 	If:     "If",
 	Elif:   "Elif",
 	Else:   "Else",
+	IfBody: "IfBody",
+
+	Return: "Return",
 
 	WhileLoop: "WhileLoop",
 	ForLoop:   "ForLoop",
 	LoopBody:  "LoopBody",
 	Break:     "Break",
+
+	Import: "Import",
 }
 
-func NewNode(typ NodeType, cNode []Node, cToken []tokenizer.Token) Node {
-	return Node{
-		typ:           typ,
-		childrenNode:  cNode,
-		childrenToken: cToken,
-	}
-}
+//func NewNode(typ NodeType, cNode []Node, cToken []tokenizer.Token) Node {
+//	return Node{
+//		typ:           typ,
+//		childrenNode:  cNode,
+//		childrenToken: cToken,
+//	}
+//}
 
 type Node struct {
 	typ           NodeType
@@ -83,29 +98,44 @@ type Node struct {
 	childrenToken []tokenizer.Token
 }
 
+func _whitespace(n int) string {
+	var space string
+	for i := 0; i < n; i++ {
+		space += " "
+	}
+	return space
+}
+
 func (nod *Node) String() string {
-	str := ""
-	str += fmt.Sprintf("Node{ typ: %v, ", nodes[nod.typ])
+	var str string
 
-	if nod.childrenNode != nil {
-		str += "cNode[ "
-		for _, n := range nod.childrenNode {
-			str += fmt.Sprintf("%v, ", nodes[n.typ])
+	switch nod.typ {
+	case Import:
+		str = fmt.Sprintf("Import : %v ", nod.childrenToken[0].Lit)
+	case FuncDef:
+		name := nod.childrenToken[0].Lit
+		formalArgs := nod.childrenNode[0]
+		retTypes := nod.childrenNode[1]
+		//body := nod.childrenNode[2]
+
+		str = fmt.Sprintf("FuncDef : %v\n", name)
+		str += _whitespace(3) + "FuncFormalArgs :\n"
+		for i, arg := range formalArgs.childrenNode {
+			str += _whitespace(5) + fmt.Sprintf("(%2d) %v (%v)\n", i, arg.childrenToken[0].Lit, arg.childrenToken[1].Typ.String())
 		}
-		str += "], "
+		str += _whitespace(3) + "FuncRetTypes :\n"
+		for i, ret := range retTypes.childrenToken {
+			str += _whitespace(5) + fmt.Sprintf("(%2d) %v\n", i, ret.Typ.String())
+		}
+		str += _whitespace(3) + "FuncBody :\n"
+	default:
+		str = fmt.Sprintf("Node { %v }", nodes[nod.typ])
 	}
 
-	if nod.childrenToken != nil {
-		str += "cToken[ "
-		for _, tok := range nod.childrenToken {
-			str += fmt.Sprintf("%v, ", tok.String())
-		}
-		str += "], "
-	}
-
-	str += "}"
 	return str
 }
+
+/* 関数 */
 
 func NewFuncDefNode(ident tokenizer.Token, formalArgs Node, retType Node, body Node) Node {
 
@@ -160,5 +190,13 @@ func NewFuncBodyNode(lines []Node) Node {
 		typ:           FuncBody,
 		childrenToken: nil,
 		childrenNode:  lines,
+	}
+}
+
+func NewImportNode(lib tokenizer.Token) Node {
+	return Node{
+		typ:           Import,
+		childrenToken: []tokenizer.Token{lib},
+		childrenNode:  nil,
 	}
 }
