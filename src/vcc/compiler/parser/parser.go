@@ -32,6 +32,7 @@ func (ps *Parser) goNext() {
 	ps.pos++
 }
 
+/* 関数 */
 func (ps *Parser) _consumeFuncFormalArgs() (Node, error) {
 	// "("
 	if _lp := ps.curt(); _lp.Typ != tokenizer.LPAREN {
@@ -212,7 +213,27 @@ func (ps *Parser) consumeFunction() (funcNode Node, err error) {
 	return funcNode, err
 }
 
-func (ps *Parser) Parse() error {
+/* Import */
+func (ps *Parser) consumeImport() (Node, error) {
+	// import "lib"
+	var library tokenizer.Token
+
+	if _imp := ps.curt(); _imp.Typ != tokenizer.IMPORT {
+		return Node{}, SyntaxErr("consumeImport", tokenizer.IMPORT.String(), _imp.Typ.String())
+	}
+	ps.goNext()
+
+	if _lib := ps.curt(); _lib.Typ != tokenizer.STRING {
+		return Node{}, SyntaxErr("consumeImport", tokenizer.STRING.String(), _lib.Typ.String())
+	} else {
+		library = _lib
+	}
+	ps.goNext()
+
+	return NewImportNode(library), nil
+}
+
+func (ps *Parser) Parse() ([]Node, error) {
 	var nodes []Node
 	for !ps.isEof() {
 		tok := ps.curt()
@@ -220,10 +241,16 @@ func (ps *Parser) Parse() error {
 		case tokenizer.FUNC:
 			funcNode, err := ps.consumeFunction()
 			if err != nil {
-				return err
+				return nil, err
 			}
 			nodes = append(nodes, funcNode)
+		case tokenizer.IMPORT:
+			importNode, err := ps.consumeImport()
+			if err != nil {
+				return nil, err
+			}
+			nodes = append(nodes, importNode)
 		}
 	}
-	return nil
+	return nodes, nil
 }

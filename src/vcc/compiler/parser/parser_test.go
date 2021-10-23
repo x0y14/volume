@@ -1,6 +1,7 @@
 package parser
 
 import (
+	"fmt"
 	"github.com/x0y14/volume/src/vcc/compiler/misc"
 	"github.com/x0y14/volume/src/vcc/compiler/tokenizer"
 	"testing"
@@ -31,7 +32,7 @@ func TestParser_ParseWithPath(t *testing.T) {
 			}
 
 			ps := NewParser(tokens)
-			err = ps.Parse()
+			_, err = ps.Parse()
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -77,6 +78,10 @@ func TestParser_ParseWithText(t *testing.T) {
 			"args: 0, ret: 2, body: 1",
 			"func main() (string, int) {}",
 		},
+		{
+			"import",
+			"import \"stdio\"",
+		},
 	}
 
 	for _, test := range tests {
@@ -88,10 +93,16 @@ func TestParser_ParseWithText(t *testing.T) {
 			}
 
 			ps := NewParser(tokens)
-			err = ps.Parse()
+			nodes, err := ps.Parse()
 			if err != nil {
 				t.Fatal(err)
 			}
+
+			fmt.Printf("\n[Nodes]\n")
+			for _, node := range nodes {
+				fmt.Printf("%v\n", node.String())
+			}
+			fmt.Println()
 		})
 	}
 }
