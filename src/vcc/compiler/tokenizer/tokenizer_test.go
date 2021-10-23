@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-func TestTokenizer_Tokenize(t *testing.T) {
+func TestTokenizer_TokenizeWithPath(t *testing.T) {
 	var tests = []struct {
 		title string
 		path  string
@@ -21,6 +21,31 @@ func TestTokenizer_Tokenize(t *testing.T) {
 		t.Run(test.title, func(t *testing.T) {
 			script := misc.Scan(test.path)
 			tk := NewTokenizer(script)
+			tokens, err := tk.Tokenize([]TokenType{WHITESPACE, COMMENT, NEWLINE})
+			if err != nil {
+				t.Fatal(err)
+			}
+			for i, tok := range tokens {
+				fmt.Printf("%03d | %v\n", i, tok.String())
+			}
+		})
+	}
+}
+
+func TestTokenizer_TokenizeWithText(t *testing.T) {
+	var tests = []struct {
+		title  string
+		script string
+	}{
+		{
+			"OR AND",
+			"|| &&",
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.title, func(t *testing.T) {
+			tk := NewTokenizer(test.script)
 			tokens, err := tk.Tokenize([]TokenType{WHITESPACE, COMMENT, NEWLINE})
 			if err != nil {
 				t.Fatal(err)

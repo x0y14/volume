@@ -52,6 +52,9 @@ const (
 	COLON   // :
 	AMP     // &
 
+	AND // &&
+	OR  // ||
+
 	LT // <
 	GT // >
 
@@ -62,6 +65,9 @@ const (
 	QUESTEq // !=
 	PLUSEq  // +=
 	MINUSEq // -=
+	// *=
+	// /=
+	// %=
 	COLONEq // :=
 	LTEq    // <=
 	GTEq    // >=
@@ -128,11 +134,15 @@ var tokenTypes = [...]string{
 	FALSE:  "false",
 	NULL:   "null",
 
-	EXCL:       "!",
-	NUM:        "#",
-	DOLLAR:     "$",
-	PERCENT:    "%",
-	AMP:        "&",
+	EXCL:    "!",
+	NUM:     "#",
+	DOLLAR:  "$",
+	PERCENT: "%",
+	AMP:     "&",
+
+	AND: "&&",
+	OR:  "||",
+
 	AST:        "*",
 	PLUS:       "+",
 	COMMA:      ",",
