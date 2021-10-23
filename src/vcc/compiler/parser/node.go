@@ -116,7 +116,7 @@ func (nod *Node) String() string {
 		name := nod.childrenToken[0].Lit
 		formalArgs := nod.childrenNode[0]
 		retTypes := nod.childrenNode[1]
-		//body := nod.childrenNode[2]
+		body := nod.childrenNode[2]
 
 		str = fmt.Sprintf("FuncDef : %v\n", name)
 		str += _whitespace(3) + "FuncFormalArgs :\n"
@@ -128,6 +128,13 @@ func (nod *Node) String() string {
 			str += _whitespace(5) + fmt.Sprintf("(%2d) %v\n", i, ret.Typ.String())
 		}
 		str += _whitespace(3) + "FuncBody :\n"
+		for _, content := range body.childrenNode {
+			str += _whitespace(6) + content.String()
+		}
+	case VarDef:
+		name := nod.childrenToken[0]
+		data := nod.childrenNode[0].childrenToken[0]
+		str = fmt.Sprintf("Variable : %v = %v (%v)", name.Lit, data.Lit, data.Typ.String())
 	default:
 		str = fmt.Sprintf("Node { %v }", nodes[nod.typ])
 	}
@@ -198,5 +205,29 @@ func NewImportNode(lib tokenizer.Token) Node {
 		typ:           Import,
 		childrenToken: []tokenizer.Token{lib},
 		childrenNode:  nil,
+	}
+}
+
+func NewVarDefNode(ident tokenizer.Token, data Node) Node {
+	return Node{
+		typ:           VarDef,
+		childrenToken: []tokenizer.Token{ident},
+		childrenNode:  []Node{data},
+	}
+}
+
+func NewVarDataNode(data tokenizer.Token) Node {
+	return Node{
+		typ:           VarData,
+		childrenToken: []tokenizer.Token{data},
+		childrenNode:  nil,
+	}
+}
+
+func NewContentsNode(contents []Node) Node {
+	return Node{
+		typ:           Contents,
+		childrenToken: nil,
+		childrenNode:  contents,
 	}
 }
