@@ -82,6 +82,10 @@ func TestParser_ParseWithText(t *testing.T) {
 			"import",
 			"import \"stdio\"",
 		},
+		{
+			"args: 0, ret: 0, body: 1",
+			"func main() { var text = \"hello, world\" }",
+		},
 	}
 
 	for _, test := range tests {

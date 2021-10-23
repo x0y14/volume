@@ -32,7 +32,9 @@ func (ps *Parser) goNext() {
 	ps.pos++
 }
 
-/* 関数 */
+/* 関数
+func f(x int) (int) {}
+*/
 func (ps *Parser) _consumeFuncFormalArgs() (Node, error) {
 	// "("
 	if _lp := ps.curt(); _lp.Typ != tokenizer.LPAREN {
@@ -164,6 +166,36 @@ func (ps *Parser) _consumeFuncBody() (Node, error) {
 	return fBody, nil
 }
 
+func (ps *Parser) consumeContents() (Node, error) {
+	var contents []Node
+
+	if _lb := ps.curt(); _lb.Typ != tokenizer.LBRACE {
+		return Node{}, SyntaxErr("consumeContents", tokenizer.LBRACE.String(), _lb.Typ.String())
+	}
+	ps.goNext()
+
+	for ps.curt().Typ != tokenizer.RBRACE {
+		tok := ps.curt()
+		switch tok.Typ {
+		case tokenizer.VAR:
+			nod, err := ps.consumeVarDef()
+			if err != nil {
+				return Node{}, err
+			}
+			contents = append(contents, nod)
+		default:
+			return Node{}, NotYetImplErr("consumeContents", tok.String())
+		}
+	}
+
+	if _rb := ps.curt(); _rb.Typ != tokenizer.RBRACE {
+		return Node{}, SyntaxErr("consumeContents", tokenizer.RBRACE.String(), _rb.Typ.String())
+	}
+	ps.goNext()
+
+	return NewContentsNode(contents), nil
+}
+
 func (ps *Parser) consumeFunction() (funcNode Node, err error) {
 	// func f( <args> ) ( <ret> ) { <body> }
 
@@ -201,7 +233,9 @@ func (ps *Parser) consumeFunction() (funcNode Node, err error) {
 	// 関数内で、戻り値を読み飛ばしているので、goNextはいらない。
 
 	// "{" <body> "}"
-	fBody, err = ps._consumeFuncBody()
+	// contentsに差し替えてみる.
+	//fBody, err = ps._consumeFuncBody()
+	fBody, err = ps.consumeContents()
 	if err != nil {
 		return Node{}, err
 	}
@@ -213,7 +247,9 @@ func (ps *Parser) consumeFunction() (funcNode Node, err error) {
 	return funcNode, err
 }
 
-/* Import */
+/* Import
+import "lib"
+*/
 func (ps *Parser) consumeImport() (Node, error) {
 	// import "lib"
 	var library tokenizer.Token
@@ -231,6 +267,48 @@ func (ps *Parser) consumeImport() (Node, error) {
 	ps.goNext()
 
 	return NewImportNode(library), nil
+}
+
+/* 変数定義
+var ident = any
+*/
+func (ps *Parser) consumeVarDef() (Node, error) {
+	var varName tokenizer.Token
+	// IDENT
+	var varData tokenizer.Token
+	varDataTypeExpected := []tokenizer.TokenType{
+		tokenizer.IDENT, tokenizer.STRING, tokenizer.INT, tokenizer.FLOAT,
+		tokenizer.TRUE, tokenizer.FALSE, tokenizer.MAP, tokenizer.LIST, tokenizer.NULL,
+	}
+
+	if _var := ps.curt(); _var.Typ != tokenizer.VAR {
+		return Node{}, SyntaxErr("consumeVarDef", tokenizer.VAR.String(), _var.Typ.String())
+	}
+	ps.goNext()
+
+	if _ident := ps.curt(); _ident.Typ != tokenizer.IDENT {
+		return Node{}, SyntaxErr("consumeVarDef", tokenizer.IDENT.String(), _ident.Typ.String())
+	} else {
+		varName = _ident
+	}
+	ps.goNext()
+
+	if _eq := ps.curt(); _eq.Typ != tokenizer.EQUAL {
+		return Node{}, SyntaxErr("consumeVarDef", tokenizer.EQUAL.String(), _eq.Typ.String())
+	}
+	ps.goNext()
+
+	if _data := ps.curt(); !tokenizer.IsAllowedType(varDataTypeExpected, _data.Typ) {
+		return Node{}, SyntaxErr(
+			"consumeVarDef",
+			"[INDENT, STRING, INT, FLOAT, TRUE, FALSE, MAP, LIST, NULL]",
+			_data.Typ.String())
+	} else {
+		varData = _data
+	}
+	ps.goNext()
+
+	return NewVarDefNode(varName, NewVarDataNode(varData)), nil
 }
 
 func (ps *Parser) Parse() ([]Node, error) {
