@@ -2,6 +2,8 @@
 a programming language  
 Javaのように、バーチャルマシン上で動作します。
 
+右辺、単項しかサポートしてない。
+
 ## VVM (Volume Virtual Machine)
 VBinを読み込んで、実行するバーチャルマシン
 

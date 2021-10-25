@@ -24,8 +24,11 @@ const (
 	VarDef   // 変数定義
 	VarSubst // 代入
 	VarData  // 変数の中身
+	VarRHS   // 右辺
 
-	CalcExpr      // 式, +=, ++, +とか
+	ExprOperator
+	CalcExpr      // 式, +, -, -, *, とか
+	ControlExpr   // ++, --, +=, -=
 	CondExpr      //条件分岐用の式, Boolを求める。
 	CondExprGroup // CondExprのグループ。 CondExpr || CondExprとか、CondExpr && CondExprとか。
 	// experimental
@@ -63,7 +66,10 @@ var nodes = [...]string{
 	VarDef:   "VarDef",
 	VarSubst: "VarSubst",
 	VarData:  "VarData",
+	VarRHS:   "VarRHS",
 
+	ExprOperator:  "ExprOperator",
+	ControlExpr:   "ControlExpr",
 	CalcExpr:      "CalcExpr",
 	CondExpr:      "CondExpr",
 	CondExprGroup: "CondExprGroup",
@@ -134,7 +140,7 @@ func (nod *Node) String() string {
 	case VarDef:
 		name := nod.childrenToken[0]
 		data := nod.childrenNode[0].childrenToken[0]
-		str = fmt.Sprintf("Variable : %v = %v (%v)", name.Lit, data.Lit, data.Typ.String())
+		str = fmt.Sprintf("Variable : %v = %v (%v)\n", name.Lit, data.Lit, data.Typ.String())
 	default:
 		str = fmt.Sprintf("Node { %v }", nodes[nod.typ])
 	}
@@ -229,5 +235,40 @@ func NewContentsNode(contents []Node) Node {
 		typ:           Contents,
 		childrenToken: nil,
 		childrenNode:  contents,
+	}
+}
+
+func NewControlExprNode(controlOp tokenizer.Token, target tokenizer.Token, diff tokenizer.Token) Node {
+	return Node{
+		typ:           ControlExpr,
+		childrenToken: []tokenizer.Token{controlOp, target, diff},
+		childrenNode:  nil,
+	}
+}
+
+func NewCalcExprNode(calcOp tokenizer.Token, args []tokenizer.Token) Node {
+	var tokens []tokenizer.Token
+	tokens = append(tokens, calcOp)
+	tokens = append(tokens, args...)
+	return Node{
+		typ:           CalcExpr,
+		childrenToken: tokens,
+		childrenNode:  nil,
+	}
+}
+
+func NewCondExprNode(condOp tokenizer.Token, a1 tokenizer.Token, a2 tokenizer.Token) Node {
+	return Node{
+		typ:           CondExpr,
+		childrenToken: []tokenizer.Token{condOp, a1, a2},
+		childrenNode:  nil,
+	}
+}
+
+func NewCondExprGroupNode(logicalOps []tokenizer.Token, experiments []Node) Node {
+	return Node{
+		typ:           CondExprGroup,
+		childrenToken: logicalOps,
+		childrenNode:  experiments,
 	}
 }

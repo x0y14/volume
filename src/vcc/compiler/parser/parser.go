@@ -275,7 +275,7 @@ var ident = any
 func (ps *Parser) consumeVarDef() (Node, error) {
 	var varName tokenizer.Token
 	// IDENT
-	var varData tokenizer.Token
+	var varData Node
 	varDataTypeExpected := []tokenizer.TokenType{
 		tokenizer.IDENT, tokenizer.STRING, tokenizer.INT, tokenizer.FLOAT,
 		tokenizer.TRUE, tokenizer.FALSE, tokenizer.MAP, tokenizer.LIST, tokenizer.NULL,
@@ -298,17 +298,123 @@ func (ps *Parser) consumeVarDef() (Node, error) {
 	}
 	ps.goNext()
 
+	// todo : 式が入る可能性があるので、個別の解析が必要
+	// todo : consumeRHS (RHS = 右辺)
 	if _data := ps.curt(); !tokenizer.IsAllowedType(varDataTypeExpected, _data.Typ) {
 		return Node{}, SyntaxErr(
 			"consumeVarDef",
 			"[INDENT, STRING, INT, FLOAT, TRUE, FALSE, MAP, LIST, NULL]",
 			_data.Typ.String())
 	} else {
-		varData = _data
+		// callFuncかどうか
+		if ps.next().Typ == tokenizer.LPAREN {
+			nod, err := ps.consumeCallFunc()
+			if err != nil {
+				return Node{}, err
+			}
+			varData = nod
+		} else {
+			varData = NewVarDataNode(_data)
+		}
 	}
+	//varData, err := ps.consumeRHS()
+	//if err != nil {
+	//	return Node{}, err
+	//}
 	ps.goNext()
 
-	return NewVarDefNode(varName, NewVarDataNode(varData)), nil
+	return NewVarDefNode(varName, varData), nil
+}
+
+func (ps *Parser) consumeCalcExpr() {
+}
+
+func (ps *Parser) consumeFormula() {}
+
+func (ps *Parser) consumeCallFunc() (Node, error) {
+	return Node{}, nil
+}
+
+func (ps *Parser) consumeRHS() (Node, error) {
+	// 予想される右辺について。
+	// G1 = [INDENT, STRING, INT, FLOAT, TRUE, FALSE, MAP, LIST, NULL]
+	// G2 = [CallFunc]
+	// G3 = [INDENT, STRING, INT, FLOAT, CallFunc]
+
+	// 1. G1, G2,の単体
+	// 2. G3を使用した式 (全ての型が一致している必要がある。)
+	// 再起的な解析が必要。
+
+	var variables []Node
+
+	valExpectTypes := []tokenizer.TokenType{
+		tokenizer.IDENT, tokenizer.STRING, tokenizer.INT, tokenizer.FLOAT,
+	}
+	calcExpectTypes := []tokenizer.TokenType{
+		tokenizer.PERCENT, tokenizer.AST, tokenizer.PLUS, tokenizer.MINUS, tokenizer.SLASH,
+	}
+
+rhsLoop:
+	for !ps.isEof() {
+		tok := ps.curt()
+		switch tok.Typ {
+		case tokenizer.IDENT, tokenizer.STRING, tokenizer.INT, tokenizer.FLOAT:
+			// 項
+			if tok.Typ == tokenizer.IDENT && ps.next().Typ == tokenizer.LPAREN {
+				// 関数呼び出し
+				nod, err := ps.consumeCallFunc()
+				if err != nil {
+					return Node{}, err
+				}
+				variables = append(variables, nod)
+			} else {
+				nod := Node{
+					typ:           VarData,
+					childrenToken: []tokenizer.Token{tok},
+					childrenNode:  nil,
+				}
+				variables = append(variables, nod)
+				ps.goNext()
+			}
+
+			// 演算子
+			//if _opr := ps.curt(); _opr.Typ != _opr {
+			//}
+
+			_tok2 := ps.curt()
+			if !tokenizer.IsAllowedType(calcExpectTypes, _tok2.Typ) {
+				break rhsLoop
+			}
+			exprOpr := Node{
+				typ:           ExprOperator,
+				childrenToken: []tokenizer.Token{_tok2},
+				childrenNode:  nil,
+			}
+			variables = append(variables, exprOpr)
+			ps.goNext()
+
+			if !tokenizer.IsAllowedType(valExpectTypes, ps.curt().Typ) {
+				return Node{}, SyntaxErr("consumeRHS", "[INDENT, STRING, INT, FLOAT]", ps.curt().Typ.String())
+			}
+
+		case tokenizer.TRUE, tokenizer.FALSE, tokenizer.MAP, tokenizer.LIST, tokenizer.NULL:
+			ps.goNext()
+			return Node{
+				typ:           VarData,
+				childrenToken: []tokenizer.Token{tok},
+				childrenNode:  nil,
+			}, nil
+		default:
+			return Node{}, NotYetImplErr("consumeRHS", tok.Typ.String())
+		}
+	}
+	// 式解析
+
+	return Node{
+		typ:           VarRHS,
+		childrenToken: nil,
+		childrenNode:  variables,
+	}, nil
 }
 
 func (ps *Parser) Parse() ([]Node, error) {

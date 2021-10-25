@@ -48,12 +48,14 @@ CALC_OPERATORS = [
     AST(*),  
     PLUS(+),  
     MINUS(-),  
-    SLASH(/),  
+    SLASH(/),   
+]  
+CONTROL_OPERATORS = [
     INCREMENT(++),  
     DECREMENT(--),  
     PLUSEq(+=),  
-    MINUSEq(-=),  
-]  
+    MINUSEq(-=), 
+]
 COND_OPERATORS = [  
     EQUALEq(==),  
     QUESTEq(!=),  
@@ -85,7 +87,7 @@ Node{
         Token{ typ: IDENT }
     ]
     childrenNode : [
-        ( VarData )
+        ( VarData, CalcExpr )
     ]
 }
 ```
@@ -98,7 +100,7 @@ Node{
         Token{ typ: IDENT }
     ]
     childrenNode : [
-        ( VarData )
+        ( VarData, CalcExpr )
     ]
 }
 ```
@@ -134,6 +136,18 @@ Node{
     typ: CalcExpr
     childrenToken: [
         ( CALC_OPERATORS )
+        ( IDENT, INT, FLOAT )+
+    ]
+    childrenNode : []
+}
+```
+
+### ControlExpr(値操作系の数式)
+```text
+Node{
+    typ: CalcExpr
+    childrenToken: [
+        ( CONTROL_OPERATORS )
         ( IDENT, INT, FLOAT )+
     ]
     childrenNode : []
