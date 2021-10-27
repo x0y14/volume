@@ -1,0 +1,30 @@
+import "std"
+import "fmt"
+
+func main() int {
+    // this is a comment
+
+    var ten = 10;
+    m := 5 * ten;
+
+    fizzbuzz(m);
+
+    return 0;
+}
+
+func fizzbuzz(max int) {
+    i := 0;
+    while i < max {
+
+        if i % 15 == 0 {
+            std.println("fizzbuzz");
+        } elseif i % 3 == 0 {
+            std.println("fizz");
+        } elseif i % 5 == 0 {
+            std.println("buzz");
+        } else {
+            std.println(i);
+        }
+        i++;
+    }
+}

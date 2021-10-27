@@ -166,30 +166,165 @@ func (ps *Parser) _consumeFuncBody() (Node, error) {
 	return fBody, nil
 }
 
+func (ps *Parser) consumeVarDef2() (Node, error) {
+	// "var"
+	if _var := ps.curt(); _var.Typ != tokenizer.VAR {
+		return Node{}, SyntaxErr("consumeVarDef2", tokenizer.VAR.String(), _var.Typ.String())
+	}
+	ps.goNext()
+
+	var identTok tokenizer.Token
+
+	// ident
+	if _ident := ps.curt(); _ident.Typ != tokenizer.IDENT {
+		return Node{}, SyntaxErr("consumeVarDef2", tokenizer.IDENT.String(), _ident.Typ.String())
+	} else {
+		identTok = _ident
+	}
+
+	var rhs []tokenizer.Token
+
+	// RHS 右辺
+	for ps.curt().Typ != tokenizer.SEMI {
+		rhs = append(rhs, ps.curt())
+		ps.goNext()
+	}
+	// ";"
+	ps.goNext()
+
+	varDataNode, err := NewRHSNode(rhs)
+	if err != nil {
+		return Node{}, err
+	}
+
+	return Node{
+		typ:           VarDef,
+		childrenToken: []tokenizer.Token{identTok},
+		childrenNode:  []Node{varDataNode},
+	}, nil
+}
+
+func (ps *Parser) consumeStartWithIdent() (Node, error) {
+	ident := ps.curt()
+	ps.goNext()
+
+	// ident;
+
+	// ++, --
+	if _opr := ps.curt(); tokenizer.IsAllowedType([]tokenizer.TokenType{tokenizer.INCREMENT, tokenizer.DECREMENT}, _opr.Typ) {
+		// ident++なのに;がない
+		if ps.next().Typ != tokenizer.SEMI {
+			return Node{}, SyntaxErr("", "", "")
+		}
+		// opr
+		ps.goNext()
+		// semi
+		ps.goNext()
+		return Node{
+			typ:           ControlExpr,
+			childrenToken: []tokenizer.Token{_opr, ident},
+			childrenNode:  nil,
+		}, nil
+	}
+
+	// += -=
+	if _opr := ps.curt(); tokenizer.IsAllowedType([]tokenizer.TokenType{tokenizer.PLUSEq, tokenizer.MINUSEq}, _opr.Typ) {
+		// += -=
+		ps.goNext()
+		var rhs []tokenizer.Token
+
+		for ps.curt().Typ != tokenizer.SEMI {
+			rhs = append(rhs, ps.curt())
+			ps.goNext()
+		}
+		// ";"
+		ps.goNext()
+
+		rhsNode, err := NewRHSNode(rhs)
+		if err != nil {
+			return Node{}, err
+		}
+
+		return Node{
+			typ:           AssignExpr,
+			childrenToken: []tokenizer.Token{_opr, ident},
+			childrenNode:  []Node{rhsNode},
+		}, nil
+	}
+
+	// :=
+	if _opr := ps.curt(); tokenizer.IsAllowedType([]tokenizer.TokenType{tokenizer.COLONEq}, _opr.Typ) {
+		// :=
+		ps.goNext()
+
+		var rhs []tokenizer.Token
+		for ps.curt().Typ != tokenizer.SEMI {
+			rhs = append(rhs, ps.curt())
+			ps.goNext()
+		}
+		// ;
+		ps.goNext()
+
+	}
+
+	// ident()
+	if _opr := ps.curt(); _opr.Typ == tokenizer.LPAREN {
+		// (
+		ps.goNext()
+	}
+
+	// else
+	// ident + ...
+
+	return Node{}, nil
+}
+
+func (ps *Parser) consumeLine() (Node, error) {
+	//for ps.curt().Typ != tokenizer.SEMI {
+	//	tok := ps.curt()
+	//	//fmt.Printf("%v\n", tok.String())
+	//	//ps.goNext()
+	//
+	//}
+	//fmt.Printf("End of line\n\n")
+	//// ;
+	//ps.goNext()
+
+	switch ps.curt().Typ {
+	case tokenizer.VAR:
+		nod, err := ps.consumeVarDef2()
+		if err != nil {
+			return Node{}, err
+		}
+		return nod, nil
+	case tokenizer.IDENT:
+		nod, err := ps.consumeStartWithIdent()
+		if err != nil {
+			return Node{}, err
+		}
+		return nod, nil
+	default:
+		return Node{}, NotYetImplErr("consumeLine", ps.curt().Typ.String())
+	}
+}
+
 func (ps *Parser) consumeContents() (Node, error) {
 	var contents []Node
 
 	if _lb := ps.curt(); _lb.Typ != tokenizer.LBRACE {
-		return Node{}, SyntaxErr("consumeContents", tokenizer.LBRACE.String(), _lb.Typ.String())
+		return Node{}, SyntaxErr("consumeLines", tokenizer.LBRACE.String(), _lb.Typ.String())
 	}
 	ps.goNext()
 
 	for ps.curt().Typ != tokenizer.RBRACE {
-		tok := ps.curt()
-		switch tok.Typ {
-		case tokenizer.VAR:
-			nod, err := ps.consumeVarDef()
-			if err != nil {
-				return Node{}, err
-			}
-			contents = append(contents, nod)
-		default:
-			return Node{}, NotYetImplErr("consumeContents", tok.String())
+		_, err := ps.consumeLine()
+		if err != nil {
+			return Node{}, err
 		}
 	}
 
 	if _rb := ps.curt(); _rb.Typ != tokenizer.RBRACE {
-		return Node{}, SyntaxErr("consumeContents", tokenizer.RBRACE.String(), _rb.Typ.String())
+		return Node{}, SyntaxErr("consumeLines", tokenizer.RBRACE.String(), _rb.Typ.String())
 	}
 	ps.goNext()
 
@@ -411,7 +546,7 @@ rhsLoop:
 	// 式解析
 
 	return Node{
-		typ:           VarRHS,
+		typ:           RHS,
 		childrenToken: nil,
 		childrenNode:  variables,
 	}, nil

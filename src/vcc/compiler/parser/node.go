@@ -17,6 +17,7 @@ const (
 	FuncBody     // 関数本体
 
 	Contents // Bodyに格納される。スクリプト本体。
+	Line
 
 	CallFunc     // 関数呼び出し
 	CallFuncArgs // 関数呼び出し引数
@@ -24,12 +25,13 @@ const (
 	VarDef   // 変数定義
 	VarSubst // 代入
 	VarData  // 変数の中身
-	VarRHS   // 右辺
+	RHS      // 右辺
 
 	ExprOperator
 	CalcExpr      // 式, +, -, -, *, とか
-	ControlExpr   // ++, --, +=, -=
 	CondExpr      //条件分岐用の式, Boolを求める。
+	AssignExpr    // += -=
+	ControlExpr   // ++, --,
 	CondExprGroup // CondExprのグループ。 CondExpr || CondExprとか、CondExpr && CondExprとか。
 	// experimental
 
@@ -59,6 +61,7 @@ var nodes = [...]string{
 	FuncBody:       "FuncBody",
 
 	Contents: "Contents",
+	Line:     "Line",
 
 	CallFunc:     "CallFunc",
 	CallFuncArgs: "CallFuncArgs",
@@ -66,9 +69,11 @@ var nodes = [...]string{
 	VarDef:   "VarDef",
 	VarSubst: "VarSubst",
 	VarData:  "VarData",
-	VarRHS:   "VarRHS",
+
+	RHS: "RHS",
 
 	ExprOperator:  "ExprOperator",
+	AssignExpr:    "AssignExpr",
 	ControlExpr:   "ControlExpr",
 	CalcExpr:      "CalcExpr",
 	CondExpr:      "CondExpr",
@@ -271,4 +276,11 @@ func NewCondExprGroupNode(logicalOps []tokenizer.Token, experiments []Node) Node
 		childrenToken: logicalOps,
 		childrenNode:  experiments,
 	}
+}
+
+func NewRHSNode(tokens []tokenizer.Token) (Node, error) {
+	for _, tok := range tokens {
+		fmt.Printf(">> %v\n", tok.String())
+	}
+	return Node{}, nil
 }

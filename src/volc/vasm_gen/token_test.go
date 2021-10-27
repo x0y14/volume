@@ -3,7 +3,7 @@ package vasm_gen
 import "testing"
 
 //func TestIsKeyword(t *testing.T) {
-//	var tests = []struct {
+//	var test = []struct {
 //		title string
 //		value string
 //		expect bool
@@ -15,7 +15,7 @@ import "testing"
 //		},
 //	}
 //
-//	//for _, tt := range tests {
+//	//for _, tt := range test {
 //	//	t.Run(tt.title, func(t *testing.T) {
 //	//		if got := Ident2Keyword(tt.value); got != tt.expect {
 //	//			t.Fatalf("IsKeyword(%q) = %t, expect %v", tt.value, got, tt.expect)

@@ -18,7 +18,11 @@ func TestParser_ParseWithPath(t *testing.T) {
 		},
 		{
 			"define function",
-			"./tests/define_func.vol",
+			"./test/define_func.vol",
+		},
+		{
+			"semi test",
+			"./test/semi.vol",
 		},
 	}
 
