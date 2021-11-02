@@ -271,24 +271,6 @@ func (ps *Parser) _analyzeLine(tokens []tokenizer.Token) (Node, error) {
 	return Node{}, nil
 }
 
-func (ps *Parser) consumeExprItem()        {}
-func (ps *Parser) consumeConditionalExpr() {}
-
-func (ps *Parser) consumeIf()     {}
-func (ps *Parser) consumeElseif() {}
-func (ps *Parser) consumeElse()   {}
-
-func (ps *Parser) consumeFor()   {}
-func (ps *Parser) consumeWhile() {}
-
-func (ps *Parser) consumeCallFunc()         {}
-func (ps *Parser) consumeCallFuncArgs()     {}
-func (ps *Parser) consumeCallFuncArgsItem() {}
-
-func (ps *Parser) consumeVarDef()     {}
-func (ps *Parser) consumeVarRHS()     {}
-func (ps *Parser) consumeVarRHSItem() {}
-
 func (ps *Parser) Parse() ([]Node, error) {
 
 	var nodes []Node

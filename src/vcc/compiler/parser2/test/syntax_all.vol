@@ -12,6 +12,7 @@ func main() int {
     return 0;
 }
 
+/*
 func fizzbuzz(max int) {
     i := 0;
     while i < max {
@@ -28,3 +29,4 @@ func fizzbuzz(max int) {
         i++;
     }
 }
+*/

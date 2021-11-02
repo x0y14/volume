@@ -47,11 +47,21 @@ const (
 	NdExpr
 	NdAssign
 	NdLogically
+
 	NdEquality
+	NdEqual
+	NdNotEqual
+
 	NdRelational
+	NdLt
+	NdLte
+	NdGt
+	NdGte
 
 	NdAdd
+	NdSub
 	NdMul
+	NdDiv
 	NdUnary
 
 	NdPrimary
@@ -95,10 +105,27 @@ func NewStmtExpr() Node {
 	}
 }
 
+func NewStmtBlock(stmt []Node) Node {
+	return Node{
+		kind:     0,
+		lhs:      nil,
+		rhs:      nil,
+		children: stmt,
+	}
+}
+
 func NewImportNode(lib string) Node {
 	return Node{
 		kind:      NdImport,
 		varString: lib,
+	}
+}
+
+func NewNode(kind NodeKind, lhs Node, rhs Node) Node {
+	return Node{
+		kind: kind,
+		lhs:  &lhs,
+		rhs:  &rhs,
 	}
 }
 

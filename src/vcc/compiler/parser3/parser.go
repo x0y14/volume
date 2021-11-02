@@ -2,6 +2,7 @@ package parser3
 
 import (
 	"github.com/x0y14/volume/src/vcc/compiler/tokenizer"
+	"strconv"
 )
 
 // program    = stmt*
@@ -55,46 +56,185 @@ func (ps *Parser) consume(opr string) bool {
 	return false
 }
 
-func Program() Node {
+func (ps *Parser) Program() Node {
 	return Node{}
 }
 
-func Stmt() Node {
+func (ps *Parser) Stmt() Node {
 	return Node{}
 }
 
-func Expr() Node {
+func (ps *Parser) Expr() Node {
 	return Node{}
 }
 
-func Assign() Node {
+func (ps *Parser) Assign() Node {
 	return Node{}
 }
 
-func Logically() Node {
+func (ps *Parser) Logically() Node {
 	return Node{}
 }
 
-func Equality() Node {
-	return Node{}
+func (ps *Parser) Equality() (Node, error) {
+	node, err := ps.Relational()
+	if err != nil {
+		return Node{}, err
+	}
+
+	if ps.consume("==") {
+		d, err := ps.Relational()
+		if err != nil {
+			return Node{}, err
+		}
+		return NewNode(NdEqual, node, d), nil
+	} else if ps.consume("!=") {
+
+	}
+
+	return Node{}, nil
 }
 
-func Relational() Node {
-	return Node{}
+func (ps *Parser) Relational() (Node, error) {
+	node, err := ps.Add()
+	if err != nil {
+		return Node{}, err
+	}
+
+	if ps.consume("<") {
+		d, err := ps.Add()
+		if err != nil {
+			return Node{}, err
+		}
+		return NewNode(NdLt, node, d), nil
+	} else if ps.consume("<=") {
+		d, err := ps.Add()
+		if err != nil {
+			return Node{}, err
+		}
+		return NewNode(NdLte, node, d), nil
+	} else if ps.consume(">") {
+		d, err := ps.Add()
+		if err != nil {
+			return Node{}, err
+		}
+
+		return NewNode(NdGt, node, d), nil
+	} else if ps.consume(">=") {
+		d, err := ps.Add()
+		if err != nil {
+			return Node{}, err
+		}
+
+		return NewNode(NdGte, node, d), nil
+	}
+
+	return Node{}, nil
 }
 
-func Add() Node {
-	return Node{}
+func (ps *Parser) Add() (Node, error) {
+	node, err := ps.Mul()
+	if err != nil {
+		return Node{}, err
+	}
+
+	if ps.consume("+") {
+		d, err := ps.Mul()
+		if err != nil {
+			return Node{}, err
+		}
+		return NewNode(NdAdd, node, d), nil
+	} else if ps.consume("-") {
+		d, err := ps.Mul()
+		if err != nil {
+			return Node{}, err
+		}
+		return NewNode(NdSub, node, d), nil
+	}
+	return node, nil
 }
 
-func Mul() Node {
-	return Node{}
+func (ps *Parser) Mul() (Node, error) {
+	node, err := ps.Unary()
+	if err != nil {
+		return Node{}, err
+	}
+	if ps.consume("*") {
+		d, err := ps.Unary()
+		if err != nil {
+			return Node{}, err
+		}
+		return NewNode(NdMul, node, d), nil
+	} else if ps.consume("/") {
+		d, err := ps.Unary()
+		if err != nil {
+			return Node{}, err
+		}
+		return NewNode(NdDiv, node, d), nil
+	}
+	return node, nil
 }
 
-func Unary() Node {
-	return Node{}
+func (ps *Parser) Unary() (Node, error) {
+	if ps.consume("+") {
+		return ps.Primary()
+	} else {
+		p, err := ps.Primary()
+		if err != nil {
+			return Node{}, err
+		}
+		return NewNode(NdSub, NewIntNode(0), p), nil
+	}
 }
 
-func Primary() Node {
-	return Node{}
+func (ps *Parser) Primary() (Node, error) {
+	switch ps.curt().Typ {
+	case tokenizer.INT:
+		// int
+		i, err := strconv.Atoi(ps.curt().Lit)
+		if err != nil {
+			return Node{}, err
+		}
+		ps.goNext()
+		return NewIntNode(i), nil
+	case tokenizer.STRING:
+		// string
+		ps.goNext()
+		return NewStringNode(ps.curt().Lit), nil
+	case tokenizer.FLOAT:
+		// float
+		f, err := strconv.ParseFloat(ps.curt().Lit, 64)
+		if err != nil {
+			return Node{}, err
+		}
+		ps.goNext()
+		return NewFloatNode(f), nil
+	case tokenizer.BOOL:
+		// bool
+		if ps.curt().Lit == "true" {
+			ps.goNext()
+			return NewBoolNode(true), nil
+		} else {
+			ps.goNext()
+			return NewBoolNode(false), nil
+		}
+	case tokenizer.IDENT:
+		// call
+		// ident
+		if ps.next().Typ == tokenizer.LPAREN {
+			c, err := ps.consumeCall()
+			if err != nil {
+				return Node{}, err
+			}
+			return c, nil
+		} else {
+			ps.goNext()
+			return NewIdentNode(ps.curt().Lit), nil
+		}
+	}
+	return Node{}, nil
+}
+
+func (ps *Parser) consumeCall() (Node, error) {
+	return Node{}, nil
 }
