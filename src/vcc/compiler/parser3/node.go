@@ -46,7 +46,10 @@ const (
 
 	NdExpr
 	NdAssign
+
 	NdLogically
+	NdAnd
+	NdOr
 
 	NdEquality
 	NdEqual

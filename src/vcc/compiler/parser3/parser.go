@@ -28,6 +28,13 @@ import (
 // unary      = ("+" | "-")? primary
 // primary    = int | string | float | bool | ident | call | "(" expr ")"
 
+func NewParser(tokens []tokenizer.Token) Parser {
+	return Parser{
+		tokens: tokens,
+		pos:    0,
+	}
+}
+
 type Parser struct {
 	tokens []tokenizer.Token
 	pos    int
@@ -64,16 +71,46 @@ func (ps *Parser) Stmt() Node {
 	return Node{}
 }
 
-func (ps *Parser) Expr() Node {
-	return Node{}
+func (ps *Parser) Expr() (Node, error) {
+	return ps.Assign()
 }
 
-func (ps *Parser) Assign() Node {
-	return Node{}
+func (ps *Parser) Assign() (Node, error) {
+	node, err := ps.Logically()
+	if err != nil {
+		return Node{}, err
+	}
+
+	if ps.consume("=") {
+		d, err := ps.Logically()
+		if err != nil {
+			return Node{}, err
+		}
+		return NewNode(NdAssign, node, d), nil
+	}
+
+	return node, nil
 }
 
-func (ps *Parser) Logically() Node {
-	return Node{}
+func (ps *Parser) Logically() (Node, error) {
+	node, err := ps.Equality()
+	if err != nil {
+		return Node{}, err
+	}
+	if ps.consume("&&") {
+		d, err := ps.Equality()
+		if err != nil {
+			return Node{}, err
+		}
+		return NewNode(NdAnd, node, d), nil
+	} else if ps.consume("||") {
+		d, err := ps.Equality()
+		if err != nil {
+			return Node{}, err
+		}
+		return NewNode(NdOr, node, d), nil
+	}
+	return node, nil
 }
 
 func (ps *Parser) Equality() (Node, error) {
@@ -228,7 +265,6 @@ func (ps *Parser) Primary() (Node, error) {
 			}
 			return c, nil
 		} else {
-			ps.goNext()
 			return NewIdentNode(ps.curt().Lit), nil
 		}
 	}
@@ -236,5 +272,5 @@ func (ps *Parser) Primary() (Node, error) {
 }
 
 func (ps *Parser) consumeCall() (Node, error) {
-	return Node{}, nil
+	return Node{kind: NdCall}, nil
 }
