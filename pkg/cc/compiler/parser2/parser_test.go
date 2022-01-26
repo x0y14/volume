@@ -64,3 +64,28 @@ func TestParser_ParseWithPath(t *testing.T) {
 		})
 	}
 }
+
+func TestParser_Parse(t *testing.T) {
+	var tests = []struct {
+		title    string
+		filepath string
+	}{
+		{
+			"a",
+			"../../../../sample/cc/compiler/println",
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.title, func(t *testing.T) {
+			tk := tokenizer.NewTokenizer(misc.Scan(test.filepath))
+			tokens, err := tk.Tokenize([]tokenizer.TokenType{tokenizer.WHITESPACE, tokenizer.COMMENT, tokenizer.NEWLINE})
+			if err != nil {
+				t.Fatal(err)
+			}
+			ps := NewParser(tokens)
+			_, err = ps.Parse()
+			//fmt.Printf("%v\n", node)
+		})
+	}
+}

@@ -264,10 +264,11 @@ func (ps *Parser) _consumeTokenAsLine() ([]tokenizer.Token, error) {
 }
 
 func (ps *Parser) _analyzeLine(tokens []tokenizer.Token) (Node, error) {
-	fmt.Println("Line >>")
+	fmt.Println("Line<<<")
 	for _, tok := range tokens {
-		fmt.Printf("  %v (%v)\n", tok.Lit, tok.Typ.String())
+		fmt.Printf("  `%v` [ %v ]\n", tok.Lit, tok.Typ.String())
 	}
+	fmt.Printf(">>>\n")
 	return Node{}, nil
 }
 
