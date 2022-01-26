@@ -5,7 +5,7 @@ exit
 
 
 main:
-    ;; store
+    ;; 戻る場所を保存
     push bp
     cp sp bp
 
