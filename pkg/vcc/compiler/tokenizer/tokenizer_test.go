@@ -2,7 +2,7 @@ package tokenizer
 
 import (
 	"fmt"
-	"github.com/x0y14/volume/src/vcc/compiler/misc"
+	"github.com/x0y14/volume/pkg/vcc/compiler/misc"
 	"testing"
 )
 

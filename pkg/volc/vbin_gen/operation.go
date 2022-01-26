@@ -1,7 +1,7 @@
 package vbin_gen
 
 import "fmt"
-import "github.com/x0y14/volume/src/vvm"
+import "github.com/x0y14/volume/pkg/vvm"
 
 type Operation struct {
 	opcode   vvm.Opcode

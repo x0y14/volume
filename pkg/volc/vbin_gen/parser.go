@@ -2,7 +2,7 @@ package vbin_gen
 
 import (
 	"fmt"
-	"github.com/x0y14/volume/src/vvm"
+	"github.com/x0y14/volume/pkg/vvm"
 )
 
 func NewParser(tokens []Token) *Parser {

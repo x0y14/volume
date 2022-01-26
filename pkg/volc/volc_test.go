@@ -2,8 +2,8 @@ package volc
 
 import (
 	"github.com/stretchr/testify/assert"
-	"github.com/x0y14/volume/src/volc/vbin_gen"
-	"github.com/x0y14/volume/src/vvm"
+	"github.com/x0y14/volume/pkg/volc/vbin_gen"
+	"github.com/x0y14/volume/pkg/vvm"
 	"testing"
 )
 

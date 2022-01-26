@@ -1,7 +1,7 @@
 package parser3
 
 import (
-	"github.com/x0y14/volume/src/vcc/compiler/tokenizer"
+	"github.com/x0y14/volume/pkg/vcc/compiler/tokenizer"
 	"strconv"
 )
 

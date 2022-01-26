@@ -2,8 +2,8 @@ package parser2
 
 import (
 	"fmt"
-	"github.com/x0y14/volume/src/vcc/compiler/misc"
-	"github.com/x0y14/volume/src/vcc/compiler/tokenizer"
+	"github.com/x0y14/volume/pkg/vcc/compiler/misc"
+	"github.com/x0y14/volume/pkg/vcc/compiler/tokenizer"
 	"testing"
 )
 

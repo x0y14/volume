@@ -2,8 +2,8 @@ package volc
 
 import (
 	"fmt"
-	"github.com/x0y14/volume/src/volc/vasm_gen"
-	_ "github.com/x0y14/volume/src/volc/vbin_gen"
+	"github.com/x0y14/volume/pkg/volc/vasm_gen"
+	_ "github.com/x0y14/volume/pkg/volc/vbin_gen"
 )
 
 func NewVolc() Volc {
