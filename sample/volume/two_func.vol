@@ -1,9 +1,0 @@
-func say_hello(name string) int {
-    println(name)
-    return 0
-}
-
-func main(a int) int {
-    my_name = "john"
-    say_hello(my_name)
-}

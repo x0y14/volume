@@ -1,4 +1,0 @@
-func main(a int) int {
-    var name = "john"
-    return 0
-}

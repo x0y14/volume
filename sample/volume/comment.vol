@@ -1,8 +1,0 @@
-func main() {
-    println("hello")
-    // おそらく、"println"はstdioに格納されます。
-    var ok := true
-    /* 1line
-    2line
-    3line */
-}

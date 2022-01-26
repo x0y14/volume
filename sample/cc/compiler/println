@@ -1,7 +1,0 @@
-import "stdio"
-
-func main() {
-    var a = 1;
-    println("hello, world");
-    return;
-}
