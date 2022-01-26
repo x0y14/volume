@@ -2,7 +2,7 @@ package parser
 
 import (
 	"fmt"
-	"github.com/x0y14/volume/pkg/vcc/compiler/tokenizer"
+	"github.com/x0y14/volume/pkg/cc/compiler/tokenizer"
 )
 
 type NodeType int
